@@ -96,17 +96,14 @@ MysqlPersistence::MysqlPersistence() : conn(NULL){
       shutdown();
   }
 
-bool MysqlPersistence::init(){
-  lock();
+bool MysqlPersistence::init() {
   if(conn != NULL){
     Logger::getLogger()->warning("Mysql Persistence already running");
-    unlock();
     return false;
   }
   conn = mysql_init(NULL);
   if(conn == NULL){
     Logger::getLogger()->error("Could not init mysql");
-    unlock();
     return false;
   }
   Settings* conf = Settings::getSettings();
@@ -131,7 +128,6 @@ bool MysqlPersistence::init(){
     Logger::getLogger()->error("mysql database name not specified");
     mysql_close(conn);
     conn = NULL;
-    unlock();
     return false;
   }
   const char* sock = NULL;
@@ -143,7 +139,6 @@ bool MysqlPersistence::init(){
     Logger::getLogger()->error("Could not connect to mysql server - %s", mysql_error(conn));
     mysql_close(conn);
     conn = NULL;
-    unlock();
     return false;
   }
 
@@ -364,7 +359,6 @@ bool MysqlPersistence::init(){
       Logger::getLogger()->error("You may need to delete the tables and start again");
       mysql_close(conn);
       conn = NULL;
-      unlock();
       return false;
     }
   }else{
@@ -375,7 +369,6 @@ bool MysqlPersistence::init(){
       Logger::getLogger()->error("You may need to delete the tables and start again");
       mysql_close(conn);
       conn = NULL;
-      unlock();
       return false;
     }
     //Possible central table updates
@@ -401,8 +394,6 @@ bool MysqlPersistence::init(){
 
   }
 
-  unlock();
-
   if(mysql_thread_safe()){
     Logger::getLogger()->debug("Mysql is thread safe");
   }else{
@@ -413,7 +404,7 @@ bool MysqlPersistence::init(){
 }
 
 void MysqlPersistence::shutdown(){
-  lock();
+  boost::mutex::scoped_lock lock(mutex);
   // TEMP HACK
   //     mysql_query(conn, "DELETE FROM object;");
   //     mysql_query(conn, "DELETE FROM universe;");
@@ -440,20 +431,17 @@ void MysqlPersistence::shutdown(){
     mysql_close(conn);
     conn = NULL;
   }
-  unlock();
 }
 
 bool MysqlPersistence::saveGameInfo(){
-  lock();
   mysql_query(conn, "DELETE FROM gameinfo;");
-  unlock();
   try {
     std::ostringstream querybuilder;
     Game* game = Game::getGame();
     querybuilder << "INSERT INTO gameinfo VALUES ('" << addslashes(game->getKey()) << "', ";
     querybuilder << game->getGameStartTime() << ", " << game->getTurnNumber();
     querybuilder << ", '" << game->getTurnName() << "');";
-    MysqlQuery query( conn, querybuilder.str() );
+    MysqlQuery query( conn, mutex, querybuilder.str() );
   } catch ( MysqlException& e ) {
     return false;
   }
@@ -462,7 +450,7 @@ bool MysqlPersistence::saveGameInfo(){
 
 bool MysqlPersistence::retrieveGameInfo(){
   try {
-    MysqlQuery query(conn, "SELECT * FROM gameinfo;" );
+    MysqlQuery query(conn, mutex, "SELECT * FROM gameinfo;" );
     query.nextRow();
     Game* game = Game::getGame();
     game->setKey(query.get(0));
@@ -561,7 +549,7 @@ IGObject::Ptr MysqlPersistence::retrieveObject(uint32_t obid){
 
     querybuilder << "SELECT * FROM object WHERE objectid = " << obid << " AND turnnum <= " << turn;
     querybuilder << " ORDER BY turnnum DESC LIMIT 1;";
-    MysqlQuery query( conn, querybuilder.str() );
+    MysqlQuery query( conn, mutex, querybuilder.str() );
     query.nextRow();
 
     IGObject::Ptr object( new IGObject(obid) );
@@ -575,7 +563,7 @@ IGObject::Ptr MysqlPersistence::retrieveObject(uint32_t obid){
     //children object ids
     querybuilder.str("");
     querybuilder << "SELECT object.objectid FROM object JOIN (SELECT objectid, MAX(turnnum) AS maxturnnum FROM object WHERE turnnum <= " << turn << " GROUP BY objectid) AS maxx ON (object.objectid=maxx.objectid AND object.turnnum = maxx.maxturnnum) WHERE parentid = " << obid << " ;";
-    MysqlQuery cquery(conn, querybuilder.str() );
+    MysqlQuery cquery(conn, mutex, querybuilder.str() );
     
     while(cquery.nextRow()){
       uint32_t childid = cquery.getInt(0);
@@ -658,7 +646,7 @@ uint32_t MysqlPersistence::getMaxObjectId(){
 
 IdSet MysqlPersistence::getObjectIds(){
   try {
-    MysqlQuery query(conn, "SELECT objectid FROM object;");
+    MysqlQuery query(conn, mutex, "SELECT objectid FROM object;");
     IdSet vis;
     while ( query.nextRow() ) {
       vis.insert( query.getInt(0) );
@@ -721,7 +709,7 @@ OrderQueue::Ptr MysqlPersistence::retrieveOrderQueue(uint32_t oqid){
     
       querybuilder << "SELECT * FROM orderqueue WHERE queueid=" << oqid << ";";
 
-      MysqlQuery query(conn, querybuilder.str() );
+      MysqlQuery query(conn, mutex, querybuilder.str() );
       OrderQueue::Ptr oq( new OrderQueue(oqid, query.getInt(1), 0) );
       oq->setActive(query.getInt(2) == 1);
       oq->setRepeating(query.getInt(3) == 1);
@@ -864,7 +852,7 @@ Order* MysqlPersistence::retrieveOrder(uint32_t queueid, uint32_t ordid){
     std::ostringstream querybuilder;
     {
       querybuilder << "SELECT type,turns FROM ordertype WHERE queueid = " << queueid << " AND orderid = " << ordid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
 
       order = Game::getGame()->getOrderManager()->createOrder( query.getInt(0) );
       order->setTurns( query.getInt(1) );
@@ -875,7 +863,7 @@ Order* MysqlPersistence::retrieveOrder(uint32_t queueid, uint32_t ordid){
     {
       querybuilder.str("");
       querybuilder << "SELECT resourceid, amount FROM orderresource WHERE queueid=" << queueid << " AND orderid=" << ordid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
       while( query.nextRow() ){
         order->addResource(query.getInt(0), query.getInt(1));
       }
@@ -979,7 +967,7 @@ bool MysqlPersistence::updateSpaceCoordParam(uint32_t queueid, uint32_t ordid, u
 bool MysqlPersistence::retrieveSpaceCoordParam(uint32_t queueid, uint32_t ordid, uint32_t pos, SpaceCoordParam* scp){
   std::ostringstream querybuilder;
   querybuilder << "SELECT posx,posy,posz FROM orderparamspace WHERE queueid = " << queueid << " AND orderid = " << ordid << " AND position = " << pos << ";";
-  MysqlQuery query( conn, querybuilder.str() );
+  MysqlQuery query( conn, mutex, querybuilder.str() );
   scp->setPosition(Vector3d(atoll(query.get(0).c_str()), atoll(query.get(1).c_str()), atoll(query.get(2).c_str())));
   return true;
 }
@@ -1066,7 +1054,7 @@ bool MysqlPersistence::updateStringParameter(uint32_t queueid, uint32_t ordid, u
 bool MysqlPersistence::retrieveStringParameter(uint32_t queueid, uint32_t ordid, uint32_t pos, StringParameter* st){
   std::ostringstream querybuilder;
   querybuilder << "SELECT thestring FROM orderparamstring WHERE queueid=" << queueid << " AND orderid = " << ordid << " AND position = " << pos << ";";
-  MysqlQuery query( conn, querybuilder.str() );
+  MysqlQuery query( conn, mutex, querybuilder.str() );
   st->setString( query.get(0));
   return true;
 }
@@ -1134,7 +1122,7 @@ Board::Ptr MysqlPersistence::retrieveBoard(uint32_t boardid){
   try {
     std::ostringstream querybuilder;
     querybuilder << "SELECT * FROM board WHERE boardid = " << boardid << ";";
-    MysqlQuery query( conn, querybuilder.str() );
+    MysqlQuery query( conn, mutex, querybuilder.str() );
     Board::Ptr board( new Board( boardid, query.get(1), query.get(2) ) );
     board->setPersistenceData(query.getInt(3),query.getU64(4));
     return board;
@@ -1190,7 +1178,7 @@ boost::shared_ptr< Message > MysqlPersistence::retrieveMessage(uint32_t msgid){
     querybuilder << "SELECT * FROM message WHERE messageid = " << msgid << ";";
     Message::Ptr msg;
     {
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
       msg.reset( new Message() );
       msg->setSubject( query.get(1) );
       msg->setBody( query.get(2) );
@@ -1200,7 +1188,7 @@ boost::shared_ptr< Message > MysqlPersistence::retrieveMessage(uint32_t msgid){
     querybuilder.str("");
     querybuilder << "SELECT type,refid FROM messagereference WHERE messageid = " << msgid << ";";
     {
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
       while(query.nextRow()){
         msg->addReference((RefSysType)query.getInt(0),query.getInt(1));
       }
@@ -1275,7 +1263,7 @@ ResourceDescription::Ptr MysqlPersistence::retrieveResource(uint32_t restype){
   try {
     std::ostringstream querybuilder;
     querybuilder << "SELECT * FROM resourcedesc WHERE resourcetype = " << restype << ";";
-    MysqlQuery query( conn, querybuilder.str() );
+    MysqlQuery query( conn, mutex, querybuilder.str() );
 
     res.reset( new ResourceDescription() );
     res->setResourceType(restype);
@@ -1371,7 +1359,7 @@ Player::Ptr MysqlPersistence::retrievePlayer(uint32_t playerid){
     std::ostringstream querybuilder;
     querybuilder << "SELECT * FROM player WHERE playerid = " << playerid << ";";
     {
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
 
       player.reset( new Player( playerid, query.get(1), query.get(2)) );
       player->setEmail(query.get(3));
@@ -1383,7 +1371,7 @@ Player::Ptr MysqlPersistence::retrievePlayer(uint32_t playerid){
     {
       querybuilder.str("");
       querybuilder << "SELECT * FROM playerscore WHERE playerid = " << playerid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
       while(query.nextRow()){
         player->setScore( query.getInt(1), query.getInt(2) );
       }
@@ -1451,7 +1439,7 @@ Category::Ptr MysqlPersistence::retrieveCategory(uint32_t catid){
   try {
     std::ostringstream querybuilder;
     querybuilder << "SELECT * FROM category WHERE categoryid = " << catid << ";";
-    MysqlQuery query( conn, querybuilder.str() );
+    MysqlQuery query( conn, mutex, querybuilder.str() );
     Category::Ptr cat( new Category() );
     cat->setCategoryId(catid);
     cat->setName(query.get(1));
@@ -1556,7 +1544,7 @@ Design::Ptr MysqlPersistence::retrieveDesign(uint32_t designid){
     std::ostringstream querybuilder;
     {
       querybuilder << "SELECT * FROM design WHERE designid = " << designid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
 
       design.reset( new Design() );
       design->setDesignId(designid);
@@ -1577,7 +1565,7 @@ Design::Ptr MysqlPersistence::retrieveDesign(uint32_t designid){
     {
       querybuilder.str("");
       querybuilder << "SELECT propertyid,value,displaystring FROM designproperty WHERE designid = " << designid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
       PropertyValue::Map pvlist;
       while(query.nextRow()){
         PropertyValue pv( atoi(query.get(0).c_str()), atof(query.get(1).c_str()));
@@ -1643,7 +1631,7 @@ Component::Ptr MysqlPersistence::retrieveComponent(uint32_t compid){
     std::ostringstream querybuilder;
     {
       querybuilder << "SELECT * FROM component WHERE componentid = " << compid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
 
       comp.reset( new Component() );
       comp->setComponentId(compid);
@@ -1660,7 +1648,7 @@ Component::Ptr MysqlPersistence::retrieveComponent(uint32_t compid){
     {
       querybuilder.str("");
       querybuilder << "SELECT propertyid,tpclvaluefunc FROM componentproperty WHERE componentid = " << compid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
 
       std::map<uint32_t, std::string> pvlist;
       while(query.nextRow()) {
@@ -1712,7 +1700,7 @@ Property::Ptr MysqlPersistence::retrieveProperty(uint32_t propid){
     std::ostringstream querybuilder;
     {
       querybuilder << "SELECT * FROM property WHERE propertyid = " << propid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
       prop.reset( new Property() );
       prop->setPropertyId(propid);
       prop->setRank(query.getInt(1));
@@ -1776,7 +1764,7 @@ ObjectView::Ptr MysqlPersistence::retrieveObjectView(uint32_t playerid, uint32_t
   try {
     std::ostringstream querybuilder;
     querybuilder << "SELECT * FROM playerobjectview WHERE playerid = " << playerid << " AND objectid = " << objectid << " AND turnnum <= " << turn << " ORDER BY turnnum DESC LIMIT 1;";
-    MysqlQuery query( conn, querybuilder.str() );
+    MysqlQuery query( conn, mutex, querybuilder.str() );
     ObjectView::Ptr obj( new ObjectView() );
     obj->setObjectId(objectid);
     obj->setCompletelyVisible(query.getInt(3) == 1);
@@ -1841,9 +1829,9 @@ DesignView::Ptr MysqlPersistence::retrieveDesignView(uint32_t playerid, uint32_t
   try {
     DesignView::Ptr design( new DesignView() );
     std::ostringstream querybuilder;
-    
+    {
       querybuilder << "SELECT * FROM playerdesignview WHERE playerid = " << playerid << " AND designid = " << designid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
       design->setDesignId(designid);
       design->setCompletelyVisible(query.getInt(2) == 1);
       design->setCanSeeName(query.getInt(3) == 1);
@@ -1855,7 +1843,7 @@ DesignView::Ptr MysqlPersistence::retrieveDesignView(uint32_t playerid, uint32_t
       design->setCanSeeOwner(query.getInt(9) == 1);
       design->setVisibleOwner(query.getInt(10));
       design->setModTime(query.getU64(11));
-    
+    }
 
     querybuilder.str("");
     querybuilder << "SELECT componentid,quantity FROM playerdesignviewcomp WHERE playerid = " << playerid << " AND designid = " << designid << ";";
@@ -1863,7 +1851,7 @@ DesignView::Ptr MysqlPersistence::retrieveDesignView(uint32_t playerid, uint32_t
 
     querybuilder.str("");
     querybuilder << "SELECT propertyid,value FROM playerdesignviewprop WHERE playerid = " << playerid << " AND designid = " << designid << ";";
-    MysqlQuery propquery(conn, querybuilder.str() );
+    MysqlQuery propquery(conn, mutex, querybuilder.str() );
 
     PropertyValue::Map pvlist;
     while(propquery.nextRow()){
@@ -1915,7 +1903,7 @@ ComponentView::Ptr MysqlPersistence::retrieveComponentView(uint32_t playerid, ui
     std::ostringstream querybuilder;
     {
       querybuilder << "SELECT * FROM playercomponentview WHERE playerid = " << playerid << " AND componentid = " << componentid << ";";
-      MysqlQuery query( conn, querybuilder.str() );
+      MysqlQuery query( conn, mutex, querybuilder.str() );
       comp.reset( new ComponentView( componentid, query.getInt(2) == 1) );
       comp->setCanSeeName(query.getInt(3) == 1);
       comp->setVisibleName(query.get(4));
@@ -1967,7 +1955,7 @@ bool MysqlPersistence::updatePosition3dObjectParam(uint32_t objid, uint32_t turn
 bool MysqlPersistence::retrievePosition3dObjectParam(uint32_t objid, uint32_t turn, uint32_t plid, uint32_t pgroup, uint32_t pgpos, Position3dObjectParam* pob){
   std::ostringstream querybuilder;
   querybuilder << "SELECT posx,posy,posz,relative FROM objectparamposition WHERE objectid = " << objid << " AND turn <= " << turn << " AND playerid = " << plid << " AND paramgroupid = " << pgroup << " AND paramgrouppos = " << pgpos << " ORDER BY turn DESC LIMIT 1;";
-  MysqlQuery query( conn, querybuilder.str() );
+  MysqlQuery query( conn, mutex, querybuilder.str() );
   pob->setPosition(Vector3d(strtoll(query.get(0).c_str(), NULL, 10), strtoll(query.get(1).c_str(), NULL, 10), strtoll(query.get(2).c_str(), NULL, 10)));
   pob->setRelative(query.getInt(3));
   return true;
@@ -1986,7 +1974,7 @@ bool MysqlPersistence::updateVelocity3dObjectParam(uint32_t objid, uint32_t turn
 bool MysqlPersistence::retrieveVelocity3dObjectParam(uint32_t objid, uint32_t turn, uint32_t plid, uint32_t pgroup, uint32_t pgpos, Velocity3dObjectParam* vob){
   std::ostringstream querybuilder;
   querybuilder << "SELECT velx,vely,velz,relative FROM objectparamvelocity WHERE objectid = " << objid << " AND turn <= " << turn << " AND playerid = " << plid << " AND paramgroupid = " << pgroup << " AND paramgrouppos = " << pgpos << " ORDER BY turn DESC LIMIT 1;";
-  MysqlQuery query( conn, querybuilder.str() );
+  MysqlQuery query( conn, mutex, querybuilder.str() );
   vob->setVelocity(Vector3d(strtoll(query.get(0).c_str(), NULL, 10), strtoll(query.get(1).c_str(), NULL, 10), strtoll(query.get(2).c_str(), NULL, 10)));
   vob->setRelative(query.getInt(3));
   return true;
@@ -2040,7 +2028,7 @@ bool MysqlPersistence::retrieveResourceListObjectParam(uint32_t objid, uint32_t 
   querybuilder << " AND paramgroupid = " << pgroup << " AND paramgrouppos = " << pgpos;
   querybuilder << ") AND playerid = " << plid << " AND paramgroupid = " << pgroup;
   querybuilder << " AND paramgrouppos = " << pgpos << ";";
-  MysqlQuery query( conn, querybuilder.str() );
+  MysqlQuery query( conn, mutex, querybuilder.str() );
 
   std::map<uint32_t, std::pair<uint32_t, uint32_t> > reslist;
   while(query.nextRow()){
@@ -2067,7 +2055,7 @@ bool MysqlPersistence::updateReferenceObjectParam(uint32_t objid, uint32_t turn,
 bool MysqlPersistence::retrieveReferenceObjectParam(uint32_t objid, uint32_t turn, uint32_t plid, uint32_t pgroup, uint32_t pgpos, ReferenceObjectParam* rob){
   std::ostringstream querybuilder;
   querybuilder << "SELECT reftype, refval FROM objectparamreference WHERE objectid = " << objid << " AND turn <= " << turn << " AND playerid = " << plid << " AND paramgroupid = " << pgroup << " AND paramgrouppos = " << pgpos << " ORDER BY turn DESC LIMIT 1;";
-  MysqlQuery query( conn, querybuilder.str() );
+  MysqlQuery query( conn, mutex, querybuilder.str() );
   rob->setReferenceType(query.getInt(0));
   rob->setReferencedId(query.getInt(1));
   return true;
@@ -2102,7 +2090,7 @@ bool MysqlPersistence::retrieveRefQuantityListObjectParam(uint32_t objid, uint32
   querybuilder << " AND turn <= " << turn << " AND playerid = " << plid;
   querybuilder << " AND paramgroupid = " << pgroup << " AND paramgrouppos = " << pgpos;
   querybuilder << ") AND playerid = " << plid << " AND paramgroupid = " << pgroup << " AND paramgrouppos = " << pgpos << ";";
-  MysqlQuery query( conn, querybuilder.str() );
+  MysqlQuery query( conn, mutex, querybuilder.str() );
   std::map<std::pair<int32_t, uint32_t>, uint32_t> reflist;
   while(query.nextRow()){
     int32_t reftype = query.getInt(0);
@@ -2146,7 +2134,7 @@ bool MysqlPersistence::updateSizeObjectParam(uint32_t objid, uint32_t turn, uint
 bool MysqlPersistence::retrieveSizeObjectParam(uint32_t objid, uint32_t turn, uint32_t plid, uint32_t pgroup, uint32_t pgpos, SizeObjectParam* sob){
   std::ostringstream querybuilder;
   querybuilder << "SELECT size FROM objectparamsize WHERE objectid = " << objid << " AND turn <= " << turn << " AND playerid = " << plid << " AND paramgroupid = " << pgroup << " AND paramgrouppos = " << pgpos << " ORDER BY turn DESC LIMIT 1;";
-  MysqlQuery query( conn, querybuilder.str() );
+  MysqlQuery query( conn, mutex, querybuilder.str() );
   sob->setSize(query.getU64(0));
   return true;
 }
@@ -2164,18 +2152,11 @@ bool MysqlPersistence::updateMediaObjectParam(uint32_t objid, uint32_t turn, uin
 bool MysqlPersistence::retrieveMediaObjectParam(uint32_t objid, uint32_t turn, uint32_t plid, uint32_t pgroup, uint32_t pgpos, MediaObjectParam* mob){
     std::ostringstream querybuilder;
     querybuilder << "SELECT url FROM objectparammedia WHERE objectid = " << objid << " AND turn <= " << turn << " AND playerid = " << plid << " AND paramgroupid = " << pgroup << " AND paramgrouppos = " << pgpos << " ORDER BY turn DESC LIMIT 1;";
-    MysqlQuery query( conn, querybuilder.str() );
+    MysqlQuery query( conn, mutex, querybuilder.str() );
     mob->setMediaUrl(query.get(0));
     return true;
 }
 
-void MysqlPersistence::lock(){
-  MysqlQuery::lock();
-}
-
-void MysqlPersistence::unlock(){
-  MysqlQuery::unlock();
-}
 
 void MysqlPersistence::idSetToStream( std::ostringstream& stream, const uint32_t id, const IdSet& idset ) const {
   for ( IdSet::const_iterator it = idset.begin(); it != idset.end(); ++it ) {
@@ -2260,11 +2241,11 @@ void  MysqlPersistence::insertMap ( const std::string& table, uint32_t id, uint3
 }
 
 void MysqlPersistence::singleQuery( const std::string& query ) {
-  MysqlQuery q( conn, query );
+  MysqlQuery q( conn, mutex, query );
 }
 
 uint32_t MysqlPersistence::valueQuery( const std::string& query ) {
-  MysqlQuery q( conn, query );
+  MysqlQuery q( conn, mutex, query );
   if(q.validRow()){
     return q.getInt(0);
   }
@@ -2272,7 +2253,7 @@ uint32_t MysqlPersistence::valueQuery( const std::string& query ) {
 }
 
 const IdSet MysqlPersistence::idSetQuery( const std::string& query ) {
-  MysqlQuery q( conn, query );
+  MysqlQuery q( conn, mutex, query );
   IdSet set; 
   while(q.nextRow()){
     set.insert(q.getInt(0));
@@ -2281,7 +2262,7 @@ const IdSet MysqlPersistence::idSetQuery( const std::string& query ) {
 }
 
 const IdList MysqlPersistence::idListQuery( const std::string& query ) {
-  MysqlQuery q( conn, query );
+  MysqlQuery q( conn, mutex, query );
   IdList list;
   while(q.nextRow()){
     list.push_back(q.getInt(0));
@@ -2290,7 +2271,7 @@ const IdList MysqlPersistence::idListQuery( const std::string& query ) {
 }
 
 const IdMap MysqlPersistence::idMapQuery( const std::string& query ) {
-  MysqlQuery q( conn, query );
+  MysqlQuery q( conn, mutex, query );
   IdMap map;
   while(q.nextRow()){
     map[ q.getInt(0) ] = q.getInt(1);
@@ -2299,28 +2280,25 @@ const IdMap MysqlPersistence::idMapQuery( const std::string& query ) {
 }
 
 
-  MysqlQuery::MysqlQuery( MYSQL *conn, const std::string& new_query ) 
-: connection( conn ), result( NULL ), row( NULL ), query( new_query ) 
+MysqlQuery::MysqlQuery( MYSQL *conn, boost::mutex& mutex, const std::string& new_query ) 
+: lock( mutex ), connection( conn ), result( NULL ), row( NULL ), query( new_query ) 
 {
-  lock();
   if ( mysql_query( conn, query.c_str() ) != 0 ) {
-    unlock(); // Destructor WON'T get called if throw is in constructor 
     throw MysqlException(conn,  "Query '"+query+"' failed!");
   }
-  
 }
 
-  const std::string MysqlQuery::get( uint32_t index ) {
-    if ( result == NULL ) 
-    {
-      fetchResult();
-      nextRow();
-    }
-    if ( row == NULL ) {
-      throw MysqlException( connection, "Query '"+query+"' row empty!");
-    }
-    return row[index];
+const std::string MysqlQuery::get( uint32_t index ) {
+  if ( result == NULL ) 
+  {
+    fetchResult();
+    nextRow();
   }
+  if ( row == NULL ) {
+    throw MysqlException( connection, "Query '"+query+"' row empty!");
+  }
+  return row[index];
+}
 
 int MysqlQuery::getInt( uint32_t index ) {
   if ( result == NULL ) {
@@ -2352,10 +2330,10 @@ uint64_t MysqlQuery::getU64( uint32_t index ) {
 
 void MysqlQuery::fetchResult() {
   result = mysql_store_result(connection);
+  lock.unlock();
   if ( result == NULL ) {
     throw MysqlException( connection, "Query '"+query+"' result failed!");
   }
-  unlock(); 
 }
 
 bool MysqlQuery::validRow() {
@@ -2374,6 +2352,5 @@ bool MysqlQuery::nextRow() {
 
 MysqlQuery::~MysqlQuery() {
   if ( result != NULL ) mysql_free_result(result);
-  unlock(); // unlock needs to be multiunlock safe
 }
 

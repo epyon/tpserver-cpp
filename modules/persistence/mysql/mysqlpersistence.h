@@ -24,6 +24,7 @@
 #include <map>
 
 #include <tpserver/persistence.h>
+#include <boost/thread/mutex.hpp>
 
 typedef struct st_mysql MYSQL;
 class SpaceCoordParam;
@@ -187,16 +188,16 @@ private:
   const IdSet idSetQuery( const std::string& query );
   const IdList idListQuery( const std::string& query );
   const IdMap idMapQuery( const std::string& query );
+
+private:
+  boost::mutex mutex;
 };
 
 class MysqlQuery {
   public:
-    MysqlQuery( MYSQL *conn, const std::string& new_query );
+    MysqlQuery( MYSQL *conn, boost::mutex& mutex, const std::string& new_query );
     ~MysqlQuery();
        
-    static void lock() {}
-    static void unlock() {}
-
     const std::string get( uint32_t index );
     int getInt( uint32_t index );
     uint64_t getU64( uint32_t index );
@@ -204,15 +205,16 @@ class MysqlQuery {
     bool nextRow();
 
   private:
-
     void fetchResult();
+    boost::mutex::scoped_lock lock;
+
     MYSQL *connection;
     MYSQL_RES* result;
     MYSQL_ROW row;
     
     std::string query;
 
-    MysqlQuery() {};
+    MysqlQuery();
 };
 
 #endif
