@@ -71,7 +71,7 @@ void Message::pack(OutputFrame::Ptr frame) const {
   if (frame->getVersion() > fv0_2) {
     frame->packInt(turn_number);
     frame->packInt(references.size());
-    for (References::iterator itcurr = references.begin(); itcurr != references.end(); ++itcurr) {
+    for (References::const_iterator itcurr = references.begin(); itcurr != references.end(); ++itcurr) {
       frame->packInt((*itcurr).first);
       frame->packInt((*itcurr).second);
     }

@@ -43,7 +43,7 @@ class Manager {
 
   protected:
     void clear( const IdSet& idset ) {
-      for(IdSet::iterator it = idset.begin(); it != idset.end(); ++it){
+      for(IdSet::const_iterator it = idset.begin(); it != idset.end(); ++it){
         map[*it] = boost::shared_ptr<ManagedObject>();
       }
     }
