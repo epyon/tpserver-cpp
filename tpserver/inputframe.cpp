@@ -18,7 +18,6 @@
  *
  */
 
-#include <netinet/in.h>
 #include <string>
 #include <cstdlib>
 #include <string.h>
@@ -31,21 +30,9 @@
 
 #include "inputframe.h"
 
-#ifdef htonll
-# define htonq		htonll
-# define ntohq		ntohll
-#endif
+#include "endians.h"
 
-#ifndef htonq
-#ifndef WORDS_BIGENDIAN
-# define htonq(i)	( ((int64_t)(htonl((i) & 0xffffffff)) << 32) | htonl(((i) >> 32) & 0xffffffff ) )
-#else
-#define htonq(i)        i
-#endif 
-# define ntohq		htonq
-#endif
-
-InputFrame::InputFrame(ProtocolVersion v, bool padding)
+  InputFrame::InputFrame(ProtocolVersion v, bool padding)
   : Frame(v), unpackptr(0)
 {
   padstrings = padding;
