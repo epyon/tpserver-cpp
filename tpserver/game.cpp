@@ -485,7 +485,7 @@ Game::Game() : ctime(0), turnNum(0),turnname(""), key(), turntimer(NULL){
   started = false;
 
   //this is a good place to seed the PNRG
-  random->seed(getpid() + time(NULL));
+  random->seed(time(NULL));
 }
 
 Game::Game(Game & rhs)
