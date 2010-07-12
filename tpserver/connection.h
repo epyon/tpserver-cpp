@@ -31,6 +31,9 @@ class Connection : public boost::enable_shared_from_this< Connection > {
     /// Shared pointer to connection typedef
     typedef boost::shared_ptr< Connection > Ptr;
 
+    /// Typedef for socket type
+    typedef int Socket;
+
     /**
      * Connection status
      */
@@ -65,7 +68,7 @@ class Connection : public boost::enable_shared_from_this< Connection > {
      *
      * Sets status to preconnected, and fd to the passed value
      */
-    explicit Connection(int fd, Type aType );
+    explicit Connection(Socket fd, Type aType );
 
 
     /**
@@ -94,7 +97,7 @@ class Connection : public boost::enable_shared_from_this< Connection > {
      * Returns file descriptor of connection
      */
     // TODO: Remove!
-    int getFD();
+    Socket& getSocket();
 
     /**
      * Gets connection type (admin, player, listen, meta, avahi)
@@ -104,7 +107,7 @@ class Connection : public boost::enable_shared_from_this< Connection > {
   protected:
     Connection() {}
     /// Connection socket file descriptor
-    int sockfd;
+    Socket sockfd;
     /// Connection status
     Status status;
   private:

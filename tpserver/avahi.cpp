@@ -231,7 +231,7 @@ AvahiWatchEvent watch_get_events(AvahiWatch *w){
 }
 
 void watch_free(AvahiWatch *w){
-  Network::getNetwork()->removeConnection(w->getFD());
+  Network::getNetwork()->removeConnection(w->getSocket());
 }
 
 AvahiTimeout* timeout_new(const AvahiPoll* api, const struct timeval* tv, AvahiTimeoutCallback callback, void* userdata){

@@ -32,7 +32,7 @@ Connection::Connection(Type aType)
 {
 }
 
-Connection::Connection(int fd, Type aType)
+Connection::Connection(Socket fd, Type aType)
   : sockfd(fd), status(PRECONNECTED), type(aType)
 {
 }
@@ -43,7 +43,7 @@ Connection::~Connection()
 }
 
 
-int Connection::getFD()
+Connection::Socket& Connection::getSocket()
 {
   return sockfd;
 }

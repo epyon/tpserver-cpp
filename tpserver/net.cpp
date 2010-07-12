@@ -71,11 +71,11 @@ Network *Network::getNetwork()
 
 void Network::addConnection(Connection::Ptr conn)
 {
-  DEBUG("Adding a file descriptor %d", conn->getFD());
-  connections[conn->getFD()] = conn;
-  FD_SET(conn->getFD(), &master_set);
-  if (max_fd < conn->getFD()) {
-    max_fd = conn->getFD();
+  DEBUG("Adding a file descriptor");
+  connections[conn->getSocket()] = conn;
+  FD_SET(conn->getSocket(), &master_set);
+  if (max_fd < conn->getSocket()) {
+    max_fd = conn->getSocket();
   }
 }
 
@@ -95,7 +95,7 @@ void Network::removeConnection( int fd )
 }
 
 void Network::addToWriteQueue(Connection::Ptr conn){
-  writequeue[conn->getFD()] = conn;
+  writequeue[conn->getSocket()] = conn;
 }
 
 void Network::addTimer(TimerCallback::Ptr callback){
@@ -307,7 +307,7 @@ void Network::masterLoop()
           connection->process();
         }
         if (connection->getStatus() == Connection::DISCONNECTED) {
-          INFO("Closed connection %d", connection->getFD());
+          INFO("Closed connection");
           removeConnection(itcurr->first);
           //use select again, don't check rest of list as it has changed.
           break;
