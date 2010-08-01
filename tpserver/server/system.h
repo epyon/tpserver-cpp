@@ -20,7 +20,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifdef defined(_MSC_VER) 
+
+#if defined(_MSC_VER) 
 
 #  define VERSION "0.0.0"
 

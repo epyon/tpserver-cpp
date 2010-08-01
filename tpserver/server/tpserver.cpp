@@ -27,6 +27,7 @@
 
 #include "settings.h"
 #include "server.h"
+#include "logging.h"
 
 
 #if !defined(WIN32)
@@ -69,7 +70,7 @@ int main(int argc, char* argv[])
         {
             std::string savedloglevel = settings->get("log_level");
             settings->set("log_level", "3");
-            Logger::getLogger()->error("Could not read config file");
+            LOG_ERROR("Could not read config file");
             settings->set("log_level", savedloglevel);
         }
 
@@ -112,7 +113,7 @@ int main(int argc, char* argv[])
 #else // defined(WIN32)
 
         // create the server in this thread
-        Server server_instance();
+        Server server_instance;
 
         // set console control handler to allow server to be stopped.
         gServerShutdownCallback = boost::bind(
@@ -131,7 +132,7 @@ int main(int argc, char* argv[])
     }
     catch (std::exception& e)
     {
-        Logger::getLogger()->error("Caught exception, exiting. Exception: %s", e.what());
+        LOG_ERROR("Caught exception, exiting. Exception: %s", e.what());
     }
 
     return 0;

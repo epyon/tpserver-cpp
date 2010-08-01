@@ -22,14 +22,8 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
-#include <stdint.h>
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#else
-#define VERSION "0.0.0"
-#endif
-
+#include "system.h"
 #include "algorithms.h"
 #include "logging.h"
 #include "settings.h"
