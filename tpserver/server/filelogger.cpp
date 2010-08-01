@@ -23,10 +23,7 @@
 #include <fstream>
 #include <sstream>
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
+#include "system.h"
 #include "filelogger.h"
 
 // TODO: better exception support
