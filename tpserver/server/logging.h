@@ -108,14 +108,9 @@ class Logger {
     static Logger *instance;
 };
 
-#define debugLog   Logger::getLogger()->debug
-#define infoLog    Logger::getLogger()->info
-#define warningLog Logger::getLogger()->warning
-#define errorLog   Logger::getLogger()->error
-
-#define DEBUG   Logger::getLogger()->debug
-#define INFO    Logger::getLogger()->info
-#define WARNING Logger::getLogger()->warning
-#define ERROR   Logger::getLogger()->error
+#define LOG_DEBUG   Logger::getLogger()->debug
+#define LOG_INFO    Logger::getLogger()->info
+#define LOG_WARNING Logger::getLogger()->warning
+#define LOG_ERROR   Logger::getLogger()->error
 
 #endif
