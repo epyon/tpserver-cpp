@@ -21,7 +21,7 @@
  *
  */
 
-#include <tpserver/acceptor.h> 
+#include <tpserver/server/acceptor.h> 
 
 class Server : private boost::noncopyable
 {
