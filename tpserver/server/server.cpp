@@ -25,38 +25,31 @@
 
 #include "settings.h"
 #include "logging.h"
-#include "game.h"
-#include "pluginmanager.h"
+//#include "game.h"
+//#include "pluginmanager.h"
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#else
-#define VERSION "0.0.0"
-#endif
-
+#include "system.h"
 
 Server::Server()
 {
-  
 }
 
 void Server::startAdmin()
 {
     Settings* settings = Settings::getSettings();
-    Logger *logger     = Logger::getLogger();
 
     if ( settings->get("admin_tcp") == "yes" ) 
     {
         mAdminPort.reset( new Acceptor(
             mIOS, 
-            settings->get("admin_tcp")
+            settings->get("admin_tcp"),
             "22", 
             boost::bind( &Server::acceptAdmin, this )
         ));
     }
     else
     {
-        logger->info("Not configured to start admin TCP socket");
+        LOG_INFO("Not configured to start admin TCP socket");
     }
 }
 
@@ -85,86 +78,87 @@ void Server::loadModules()
 {
     // get singletons (TODO : remove singletons ;))
     Settings *settings     = Settings::getSettings();
-    Logger *logger         = Logger::getLogger();
-    Game *game             = Game::getGame();
-    PluginManager* plugins = PluginManager::getPluginManager();
+//    Game *game             = Game::getGame();
+//    PluginManager* plugins = PluginManager::getPluginManager();
 
-    plugins->start();
+//    plugins->start();
 
     // load tpscheme
     std::string tpschemename = settings->get("tpscheme");
     if(tpschemename == "auto" || tpschemename == "")
     {
         //Temp. should be able to do better than this.
-        if ( plugins->loadTpScheme("tpguile") ) 
+/*        if ( plugins->loadTpScheme("tpguile") ) 
         {
-            logger->info("Loaded TpScheme tpguile");
+            LOG_INFO("Loaded TpScheme tpguile");
         }
         else
         {
-            logger->warning("Did not load TpScheme \"tpguile\", trying tpmzscheme");
+            LOG_WARNING("Did not load TpScheme \"tpguile\", trying tpmzscheme");
             if ( plugins->loadTpScheme("tpmzscheme") ) 
             {
-                logger->info("Loaded TpScheme tpmzscheme");
+                LOG_INFO("Loaded TpScheme tpmzscheme");
             }
             else
             {
-                logger->warning("Did not load TpScheme \"tpmzscheme\"");
+                LOG_WARNING("Did not load TpScheme \"tpmzscheme\"");
             }
         }
+		*/
     }
     else
     {
-        logger->info("Loading TpScheme %s", tpschemename.c_str());
-        if ( plugins->loadTpScheme(tpschemename) ) 
+        LOG_INFO("Loading TpScheme %s", tpschemename.c_str());
+/*        if ( plugins->loadTpScheme(tpschemename) ) 
         {
-            logger->info("Loaded TpScheme %s", tpschemename.c_str());
+            LOG_INFO("Loaded TpScheme %s", tpschemename.c_str());
         }
         else
         {
-            logger->warning("Did not load TpScheme \"%s\"", tpschemename.c_str());
+            LOG_WARNING("Did not load TpScheme \"%s\"", tpschemename.c_str());
         }
+		*/
     }
 
     // load persistence
     std::string persistencename = settings->get("persistence");
     if ( persistencename != "" )
     {
-        logger->info("Loading persistence method %s", persistencename.c_str());
-        if ( plugins->loadPersistence(persistencename) ) 
+        LOG_INFO("Loading persistence method %s", persistencename.c_str());
+/*        if ( plugins->loadPersistence(persistencename) ) 
         {
-            logger->info("Loaded persistence method %s", persistencename.c_str());
+            LOG_INFO("Loaded persistence method %s", persistencename.c_str());
         }
         else
         {
-            logger->warning("Did not load persistence method \"%s\"", persistencename.c_str());
-        }
+            LOG_WARNING("Did not load persistence method \"%s\"", persistencename.c_str());
+        }*/
     }
 
     // load ruleset
     std::string rulesetname = settings->get("ruleset");
     if ( rulesetname != "" )
     {
-        logger->info( "Loading ruleset %s", rulesetname.c_str() );
-        if ( plugins->loadRuleset(rulesetname) ) 
+        LOG_INFO( "Loading ruleset %s", rulesetname.c_str() );
+/*        if ( plugins->loadRuleset(rulesetname) ) 
         {
-            logger->info("Loaded ruleset %s", rulesetname.c_str() );
+            LOG_INFO("Loaded ruleset %s", rulesetname.c_str() );
         }
         else
         {
-            logger->warning("Did not load ruleset \"%s\"", rulesetname.c_str());
-        }
+            LOG_WARNING("Did not load ruleset \"%s\"", rulesetname.c_str());
+        }*/
     }
 
 
     if ( settings->get("game_load") == "yes" )
     {
-        game->load();
+//        game->load();
     }
 
     if ( settings->get("game_start") == "yes" )
     {
-        game->start();
+//        game->start();
     }
 
 }
@@ -178,13 +172,12 @@ void Server::stop()
 
 void Server::run()
 {
-    Logger *logger         = Logger::getLogger();
-    Game *game             = Game::getGame();
-    PluginManager* plugins = PluginManager::getPluginManager();
+//    Game *game             = Game::getGame();
+//    PluginManager* plugins = PluginManager::getPluginManager();
     Settings* settings     = Settings::getSettings();
 
-    logger->info("tpserver-cpp " VERSION " starting");
-    logger->info("This is GPL software, please see the COPYING file");
+    LOG_INFO("tpserver-cpp " VERSION " starting");
+    LOG_INFO("This is GPL software, please see the COPYING file");
 
     try
     {
@@ -194,39 +187,40 @@ void Server::run()
         mMainPort.reset( new Acceptor( 
             mIOS, 
             settings->get("tp_addr"), 
-            settings->get("tp_port") ), 
+            settings->get("tp_port"), 
             boost::bind( &Server::acceptTp, this ) 
-        );
+        ) );
 
         if ( settings->get("http") == "yes" )
         {
             mHTTPPort.reset( new Acceptor( 
                 mIOS, 
                 settings->get("http_addr"), 
-                settings->get("http_port") ), 
-                boost::bind( &Server::acceptHttp, this 
-            );
+                settings->get("http_port"),
+                boost::bind( &Server::acceptHttp, this )
+            ) );
         }
 
         mIOS.run();
 
-        if ( game->isLoaded() ) 
-        {
-            game->saveAndClose();
-        }
+//        if ( game->isLoaded() ) 
+//        {
+//            game->saveAndClose();
+//        }
 
         stopAdmin();
     }
     catch(const std::exception& e)
     {
-        logger->error("Caught exception, exiting. Exception: %s", e.what());
+        LOG_ERROR("Caught exception, exiting. Exception: %s", e.what());
     }
 
-    logger->info("TP-server exiting");
-    logger->flush();
+    LOG_INFO("TP-server exiting");
+	Logger::getLogger()->flush();
 }
 
 Server::~Server()
 {
+	
 }
 

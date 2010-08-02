@@ -116,10 +116,10 @@ int main(int argc, char* argv[])
         Server server_instance;
 
         // set console control handler to allow server to be stopped.
-        gServerShutdownCallback = boost::bind(
-            &Server::stop, 
-            &server_instance
-            );
+        //gServerShutdownCallback = boost::bind(
+        //    &Server::stop, 
+        //    &server_instance
+        //    );
 
         // set the console handler via WINAPI
         SetConsoleCtrlHandler( consoleHandler, TRUE );
