@@ -77,6 +77,11 @@ public:
 
 protected: // methods
 
+	/// Constructor
+	explicit Frame( ProtocolVersion v ) 
+		: version(v), type(ft_Invalid), type_version(0), 
+		sequence(0), pad_strings(false) {}
+
 	/// Returns const char to all data
 	const char* data() const { return raw_data.data(); }
 
