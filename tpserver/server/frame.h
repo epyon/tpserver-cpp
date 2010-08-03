@@ -75,7 +75,15 @@ public:
 	 */
 	bool isPadStrings() const { return pad_strings; }
 
-protected:
+protected: // methods
+
+	/// Returns const char to all data
+	const char* data() const { return raw_data.data(); }
+
+	/// Returns const char to body
+	const char* body() const { return data() + HEADER_LENGTH; }
+
+protected: // fields
 	/// Version of protocol that this frame is encoded with
 	ProtocolVersion version;
 	/// Frame type
@@ -87,7 +95,7 @@ protected:
 	/// Size of the frame in bytes
 	uint32_t size;
 	/// Actual data of the frame
-	std::string data;
+	std::string raw_data;
 	/// Whether to pad strings with \0 values
 	bool pad_strings;
 };
