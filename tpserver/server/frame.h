@@ -26,6 +26,55 @@
 
 class Frame : public boost::noncopyable {
 public:
+	enum { HEADER_LENGTH = 16 };
+	enum { MAX_BODY_LENGTH = 1048576 - HEADER_LENGTH };
+
+    /**
+     * Return the length of the header section
+     */
+	int getHeaderLength() const { return HEADER_LENGTH; };
+
+    /**
+     * Return the length of the data section
+     */
+	int getDataLength() const { return size; }
+
+    /**
+     * Return the frame length
+     *
+     * Equals to length of data section + length of header section
+     */
+	int getLength() const { return size + HEADER_LENGTH; }
+
+	/**
+	 * Return frame type
+	 *
+	 * See protocol description or protocol.h 
+	 */ 
+	FrameType getType() const { return type; }
+
+	/**
+	 * Return frame type version
+	 *
+	 * See protocol description or protocol.h 
+	 */ 
+	uint32_t getTypeVersion() const { return type_version; }
+
+	/**
+	 * Returns the sequence number
+	 */
+	int getSequence() const { return sequence; }
+
+	/**
+	 * Returns the protocol version
+	 */
+	ProtocolVersion getVersion() const { return version; }
+
+	/**
+	 * Returns whether strings are padded
+	 */
+	bool isPadStrings() const { return pad_strings; }
+
 protected:
 	/// Version of protocol that this frame is encoded with
 	ProtocolVersion version;
@@ -41,7 +90,6 @@ protected:
 	std::string data;
 	/// Whether to pad strings with \0 values
 	bool pad_strings;
-
 };
 
 #endif // FRAME_H
