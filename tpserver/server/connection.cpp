@@ -27,48 +27,95 @@ Connection::Connection(
 	boost::asio::io_service& aIOS, 
 	boost::asio::io_service::strand& aStrand 
 )
- : mSocket( aIOS ),
-   mStrand( aStrand )
+ : socket( aIOS ),
+   strand( aStrand )
 {
 	// no code
 }
 
-void Connection::read( boost::asio::mutable_buffers_1 aBuffer, WriteCallback onComplete )
+void Connection::listen()
 {
-	// normal operation
-	mSocket.async_read_some( 
-		aBuffer,
-		mStrand.wrap(
-			boost::bind( 
-				onComplete,
-				boost::asio::placeholders::error,
-				boost::asio::placeholders::bytes_transferred
-			)
+	// TODO: create frame!
+
+	// start an asynchronous read until headers end
+	boost::asio::async_read( socket,
+		boost::asio::buffer( frame_in->data(), Frame::getHeaderLength() ),
+		boost::bind(
+			&Connection::onReadHeader, 
+			shared_from_this(),
+			boost::asio::placeholders::error
 		)
 	);
 }
 
-
-void Connection::write( boost::asio::const_buffers_1 aBuffer, WriteCallback onComplete )
+void Connection::onReadHeader( const boost::system::error_code& error )
 {
-	// write requested data to socket asynchronously
-	boost::asio::async_write( 
-		mSocket, 
-		aBuffer,
-		mStrand.wrap(
-			boost::bind( 
-				onComplete,
-				boost::asio::placeholders::error,
-				boost::asio::placeholders::bytes_transferred
+	// if not error, parse first line and headers
+	if ( !error /* and decode header */ ) 
+	{
+		// TODO: change to read_some
+		boost::asio::async_read( socket,
+			boost::asio::buffer( frame_in->body(), frame_in->getDataLength() ),
+			boost::bind(
+				&Connection::onReadBody, 
+				shared_from_this(),
+				boost::asio::placeholders::error
 			)
-		)
-	);
+		);
+	}
+	else
+	{
+		// handle error
+	}
+}
+
+
+
+void Connection::onReadBody( const boost::system::error_code& error )
+{
+	if ( !error )
+	{
+		// TODO: handle message mechanism
+		listen();
+	}
+	else
+	{
+		// handle error
+	}
+}
+
+
+void Connection::onWrite( const boost::system::error_code& error )
+{
+	// TODO: change to write_some
+	// write requested data to socket asynchronously
+	if ( !error )
+	{
+		frames_out.pop_front();
+		if ( !frames_out.empty() )
+		{
+			boost::asio::async_write(
+				socket,
+				boost::asio::buffer( frames_out.front()->data(), frames_out.front()->getLength() ),
+				boost::bind( 
+					&Connection::onWrite, 
+					shared_from_this(),
+					boost::asio::placeholders::error
+				)
+			);
+		}
+	}
+	else
+	{
+		// handle error
+	}
 }
 
 boost::asio::ip::tcp::socket& Connection::getSocket()
 {
-	return mSocket;
+	return socket;
 }
+
 
 
 
