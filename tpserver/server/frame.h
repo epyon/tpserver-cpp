@@ -22,13 +22,19 @@
  */
 
 #include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
 #include <tpserver/protocol.h>
 
 class Frame : public boost::noncopyable {
 public:
+	/// Typedef for boost shared pointer
+	typedef boost::shared_ptr< Frame > Ptr;
+	/// Header size in bytes
 	enum { HEADER_LENGTH = 16 };
+	/// Maximum body size in bytes
 	enum { MAX_BODY_LENGTH = 1048576 - HEADER_LENGTH };
 
+public:
     /**
      * Return the length of the header section
      */
@@ -75,18 +81,24 @@ public:
 	 */
 	bool isPadStrings() const { return pad_strings; }
 
-protected: // methods
+// Currently public, will be made protected probably
 
 	/// Constructor
 	explicit Frame( ProtocolVersion v ) 
 		: version(v), type(ft_Invalid), type_version(0), 
-		sequence(0), pad_strings(false) {}
+		sequence(0), size(0), pad_strings(false) {}
 
 	/// Returns const char to all data
 	const char* data() const { return raw_data.data(); }
 
 	/// Returns const char to body
 	const char* body() const { return data() + HEADER_LENGTH; }
+
+	/// Returns char to all data
+	char* data() { return const_cast<char*>(data()); }
+
+	/// Returns char to body
+	char* body() { return const_cast<char*>(body()); }
 
 protected: // fields
 	/// Version of protocol that this frame is encoded with
