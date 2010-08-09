@@ -24,6 +24,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
 
 #include "settings.h"
 #include "server.h"
@@ -85,7 +86,7 @@ int main(int argc, char* argv[])
         pthread_sigmask( SIG_BLOCK, &sig_block, &sig_old );
 
         // run server in background
-        Server server_instance();
+        Server server_instance;
         boost::thread this_thread(
             boost::bind(
             &Server::run, 
