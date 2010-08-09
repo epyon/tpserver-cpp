@@ -63,6 +63,19 @@ bool Frame::decodeHeader()
   type     = (FrameType)ntohl(type);
   size     = ntohl(size);
 
+  // Magic check
+  if ( ver[0] != 'T' || ver[1] != 'P' ) return false;
+  
+  // Version check
+  if ( version == 3 )
+  {
+    if ( ver[2] != '0' || ver[3] != '3' ) return false;
+  }
+  else
+  {
+    version = (ProtocolVersion) ver[3];
+  }
+
   return true;
 }
 
