@@ -21,7 +21,7 @@
  *
  */
 
-#include <tpserver/system.h>
+#include <tpserver/server/system.h>
 
 enum ProtocolVersion{
   fv0_1 = 1,

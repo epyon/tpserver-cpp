@@ -28,7 +28,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
-#include <tpserver/frame.h>
+#include <tpserver/server/frame.h>
 
 class Connection : 
   public boost::noncopyable,

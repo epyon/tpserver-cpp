@@ -23,7 +23,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <tpserver/logsink.h>
+#include <tpserver/server/logsink.h>
 
 /**
  * Log sink that logs to file

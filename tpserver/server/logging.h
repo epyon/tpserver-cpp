@@ -22,7 +22,7 @@
 
 #include <string>
 #include <map>
-#include <tpserver/logsink.h>
+#include <tpserver/server/logsink.h>
 
 /**
  * Logger singleton for internal logging

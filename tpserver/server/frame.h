@@ -23,7 +23,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <tpserver/protocol.h>
+#include <tpserver/server/protocol.h>
 
 class Frame : public boost::noncopyable {
 public:
