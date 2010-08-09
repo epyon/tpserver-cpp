@@ -20,6 +20,9 @@
 
 #include "frame.h"
 
+#include <sstream>
+#include <istream>
+
 #include "endians.h"
 
 const char* Frame::data() const 
@@ -44,6 +47,22 @@ char* Frame::body()
 
 bool Frame::decodeHeader()
 {
+  std::istringstream str( raw_data, std::ios_base::binary | std::ios_base::in );
 
+  // Extract version (TP03 or TP\0\4)
+  char ver[4];
+  str.get( ver, 4 );
+
+  // Extract sequence, type and length
+  str.get( (char*)&sequence, 4 );
+  str.get( (char*)&type, 4 );
+  str.get( (char*)&size, 4 );
+
+  // Network alignment
+  sequence = ntohl(sequence);
+  type     = (FrameType)ntohl(type);
+  size     = ntohl(size);
+
+  return true;
 }
 
