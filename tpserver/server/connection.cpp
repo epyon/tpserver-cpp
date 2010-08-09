@@ -23,19 +23,23 @@
 #include <boost/make_shared.hpp>
 #include <boost/bind.hpp>
 
+#include "protocol.h"
+
 Connection::Connection( 
 	boost::asio::io_service& aIOS, 
 	boost::asio::io_service::strand& aStrand 
 )
  : socket( aIOS ),
-   strand( aStrand )
+   strand( aStrand ),
+   version( fv0_3 )
 {
 	// no code
 }
 
 void Connection::listen()
 {
-	// TODO: create frame!
+	// Create frame!
+  frame_in.reset( new Frame( version ) );
 
 	// start an asynchronous read until headers end
 	boost::asio::async_read( socket,

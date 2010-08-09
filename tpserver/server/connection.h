@@ -77,7 +77,7 @@ public:
      */
     void onReadBody( const boost::system::error_code& error );
 
-	/**
+	  /**
      * Asynchronously write an asio buffer to the connection.
      */
     void onWrite( const boost::system::error_code& error );
@@ -95,6 +95,9 @@ protected: // fields
 
 	/// Frames to be written
 	std::deque< Frame::Ptr > frames_out;
+
+  /// Connection protocol version
+	ProtocolVersion version;
 
 }; // class Connection
 
