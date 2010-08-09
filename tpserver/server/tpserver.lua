@@ -6,6 +6,8 @@ project "tpserver"
 	flags { "ExtraWarnings", "NoPCH" }
 	includedirs { "../../", ".", "/opt/local/include/" }
 	targetname "http-proxy"
+  links { "boost_system", "boost_thread-mt" }
+  libdirs { "/opt/local/lib/" }
  
     configuration "debug"
 		defines { "DEBUG" }
