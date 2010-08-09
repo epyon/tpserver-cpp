@@ -61,13 +61,6 @@ public:
 	FrameType getType() const { return type; }
 
 	/**
-	 * Return frame type version
-	 *
-	 * See protocol description or protocol.h 
-	 */ 
-	uint32_t getTypeVersion() const { return type_version; }
-
-	/**
 	 * Returns the sequence number
 	 */
 	int getSequence() const { return sequence; }
@@ -93,7 +86,7 @@ public:
 
 	/// Constructor
 	explicit Frame( ProtocolVersion v ) 
-		: version(v), type(ft_Invalid), type_version(0), 
+		: version(v), type(ft_Invalid), 
 		  sequence(0), size(0), pad_strings(false) {}
 
 	/// Returns const char to all data
@@ -113,8 +106,6 @@ protected: // fields
 	ProtocolVersion version;
 	/// Frame type
 	FrameType type;
-	/// Type version
-	uint32_t type_version;
 	/// Which packet sequence does this refer to?
 	uint32_t sequence;
 	/// Size of the frame in bytes
