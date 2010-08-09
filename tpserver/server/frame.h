@@ -24,6 +24,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <tpserver/server/protocol.h>
+#include <string>
 
 class Frame : public boost::noncopyable {
 public:
@@ -81,24 +82,31 @@ public:
 	 */
 	bool isPadStrings() const { return pad_strings; }
 
+  /**
+   * Decode header information from raw data
+   *
+   * @returns true if succeeded false, otherwise
+   */
+  bool decodeHeader();
+
 // Currently public, will be made protected probably
 
 	/// Constructor
 	explicit Frame( ProtocolVersion v ) 
 		: version(v), type(ft_Invalid), type_version(0), 
-		sequence(0), size(0), pad_strings(false) {}
+		  sequence(0), size(0), pad_strings(false) {}
 
 	/// Returns const char to all data
-	const char* data() const { return raw_data.data(); }
+	const char* data() const;
 
 	/// Returns const char to body
-	const char* body() const { return data() + HEADER_LENGTH; }
+	const char* body() const;
 
 	/// Returns char to all data
-	char* data() { return const_cast<char*>(data()); }
+	char* data();
 
 	/// Returns char to body
-	char* body() { return const_cast<char*>(body()); }
+	char* body();
 
 protected: // fields
 	/// Version of protocol that this frame is encoded with

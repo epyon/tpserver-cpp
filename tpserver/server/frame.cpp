@@ -22,6 +22,26 @@
 
 #include "endians.h"
 
+const char* Frame::data() const 
+{ 
+  return raw_data.data(); 
+}
+
+const char* Frame::body() const 
+{ 
+  return data() + HEADER_LENGTH; 
+}
+
+char* Frame::data() 
+{ 
+  return const_cast<char*>(data()); 
+}
+
+char* Frame::body() 
+{ 
+  return const_cast<char*>(body()); 
+}
+
 bool Frame::decodeHeader()
 {
 
