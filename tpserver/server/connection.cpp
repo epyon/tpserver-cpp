@@ -55,7 +55,7 @@ void Connection::listen()
 void Connection::onReadHeader( const boost::system::error_code& error )
 {
 	// if not error, parse first line and headers
-	if ( !error /* and decode header */ ) 
+	if ( !error && frame_in->decodeHeader() ) 
 	{
 		// TODO: change to read_some
 		boost::asio::async_read( socket,
