@@ -39,7 +39,7 @@ void Connection::listen()
 
 	// start an asynchronous read until headers end
 	boost::asio::async_read( socket,
-		boost::asio::buffer( frame_in->data(), Frame::getHeaderLength() ),
+		boost::asio::buffer( frame_in->data(), frame_in->getHeaderLength() ),
 		boost::bind(
 			&Connection::onReadHeader, 
 			shared_from_this(),

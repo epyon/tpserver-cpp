@@ -44,7 +44,7 @@ void Server::startAdmin()
             mIOS, 
             settings->get("admin_tcp"),
             "22", 
-            boost::bind( &Server::acceptAdmin, this )
+            boost::bind( &Server::acceptAdmin, this, _1 )
         ));
     }
     else
@@ -188,7 +188,7 @@ void Server::run()
             mIOS, 
             settings->get("tp_addr"), 
             settings->get("tp_port"), 
-            boost::bind( &Server::acceptTp, this ) 
+            boost::bind( &Server::acceptTp, this, _1 ) 
         ) );
 
         if ( settings->get("http") == "yes" )
@@ -197,7 +197,7 @@ void Server::run()
                 mIOS, 
                 settings->get("http_addr"), 
                 settings->get("http_port"),
-                boost::bind( &Server::acceptHttp, this )
+                boost::bind( &Server::acceptHttp, this, _1 )
             ) );
         }
 

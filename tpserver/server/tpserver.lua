@@ -4,7 +4,7 @@ project "tpserver"
     language "C++"
     files { "**.h", "**.cpp" }
 	flags { "ExtraWarnings", "NoPCH" }
-	includedirs { "../../", "." }
+	includedirs { "../../", ".", "/opt/local/include/" }
 	targetname "http-proxy"
  
     configuration "debug"
