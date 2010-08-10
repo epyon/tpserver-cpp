@@ -38,6 +38,11 @@ public:
 	/// Boost shared pointer
 	typedef boost::shared_ptr< Connection > Ptr;
 
+  /// Connection type
+  enum Type {
+    PLAYER,
+    ADMIN
+  };
 public:
 
     /**
@@ -81,6 +86,11 @@ public:
      * Asynchronously write an asio buffer to the connection.
      */
     void onWrite( const boost::system::error_code& error );
+
+    /** 
+     * The working method -- processes the received message
+     */
+    virtual void processFrame() = 0;
 
 protected: // fields
 
