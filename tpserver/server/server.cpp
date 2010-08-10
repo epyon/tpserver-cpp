@@ -44,7 +44,7 @@ void Server::startAdmin()
             mIOS, 
             settings->get("admin_tcp"),
             "22", 
-            boost::bind( &Server::acceptAdmin, this, _1 )
+            boost::bind( &Server::createConnection, this, Connection::ADMIN )
         ));
     }
     else
@@ -53,21 +53,10 @@ void Server::startAdmin()
     }
 }
 
-void Server::acceptAdmin( const boost::asio::ip::tcp::socket& socket )
+Connection::Ptr Server::createConnection( Connection::Type )
 {
-    
+  return Connection::Ptr( (Connection*)0 );
 }
-
-void Server::acceptTp( const boost::asio::ip::tcp::socket& socket )
-{
-
-}
-
-void Server::acceptHttp( const boost::asio::ip::tcp::socket& socket )
-{
-
-}
-
 
 void Server::stopAdmin()
 {
@@ -188,18 +177,18 @@ void Server::run()
             mIOS, 
             settings->get("tp_addr"), 
             settings->get("tp_port"), 
-            boost::bind( &Server::acceptTp, this, _1 ) 
+            boost::bind( &Server::createConnection, this, Connection::PLAYER ) 
         ) );
 
         if ( settings->get("http") == "yes" )
         {
-            mHTTPPort.reset( new Acceptor( 
+/*            mHTTPPort.reset( new Acceptor( 
                 mIOS, 
                 settings->get("http_addr"), 
                 settings->get("http_port"),
                 boost::bind( &Server::acceptHttp, this, _1 )
             ) );
-        }
+*/        }
 
         mIOS.run();
 

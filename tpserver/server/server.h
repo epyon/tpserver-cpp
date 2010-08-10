@@ -60,7 +60,11 @@ class Server : private boost::noncopyable
      * Destructor
      */
     ~Server();
+
   private:
+    /// Creates a connection of the requested type
+    Connection::Ptr createConnection( Connection::Type );
+
     /// Accepts an admin connection
     void acceptAdmin( const boost::asio::ip::tcp::socket& socket );
 

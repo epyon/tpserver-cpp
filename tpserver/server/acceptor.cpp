@@ -22,10 +22,9 @@
 
 #include <boost/bind.hpp>
 
-Acceptor::Acceptor( boost::asio::io_service& aIOS, const std::string& aAddress, const std::string& aPort, Callback aCallback )
+Acceptor::Acceptor( boost::asio::io_service& aIOS, const std::string& aAddress, const std::string& aPort, Creator aCreator )
   : mAcceptor( aIOS ),
-    mSocket( aIOS ),
-    mCallback( aCallback )
+    mCreator( aCreator )
 {
     // create a resolver, and resolve the address
     boost::asio::ip::tcp::resolver iResolver( aIOS );
@@ -40,9 +39,12 @@ Acceptor::Acceptor( boost::asio::io_service& aIOS, const std::string& aAddress, 
     // start listening
     mAcceptor.listen();
 
+    // create first connection
+    mConnection = mCreator();
+
     // asynchronously accept on our first worker, if succeeded, run accept
     mAcceptor.async_accept( 
-        mSocket, 
+        mConnection->getSocket(), 
         boost::bind( &Acceptor::accept, this, boost::asio::placeholders::error ) 
         );
     // note that this wont happen yet, because there's no io_service running
@@ -55,11 +57,14 @@ void Acceptor::accept( const boost::system::error_code& aError )
     if ( aError ) return;
 
     // process the socket
-    mCallback( mSocket );
+    mConnection->listen();
+
+    // forget the connection, create a new one
+    mConnection = mCreator();
 
     // ... and asynchronously wait for an accept again
     mAcceptor.async_accept( 
-        mSocket, 
+        mConnection->getSocket(), 
         boost::bind( &Acceptor::accept, this, boost::asio::placeholders::error ) 
         );
 

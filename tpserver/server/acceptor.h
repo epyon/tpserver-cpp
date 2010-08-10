@@ -24,11 +24,12 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
+#include <tpserver/server/connection.h>
 
 class Acceptor {
 public:
-    /// Callback for socket acception
-    typedef boost::function< void ( const boost::asio::ip::tcp::socket& ) > Callback;
+    /// Creator for socket acception
+    typedef boost::function< Connection::Ptr (void) > Creator;
 
     /// Shared pointer typedef
     typedef boost::shared_ptr< Acceptor > Ptr;
@@ -40,7 +41,7 @@ public:
      * @param aAddress TCP address to listen on
      * @param aPort port on which to listen
      */
-    explicit Acceptor( boost::asio::io_service& aIOS, const std::string& aAddress, const std::string& aPort, Callback aCallback );
+    explicit Acceptor( boost::asio::io_service& aIOS, const std::string& aAddress, const std::string& aPort, Creator aCreator );
 
   private:
     /// Accept handler
@@ -50,10 +51,10 @@ public:
     boost::asio::ip::tcp::acceptor mAcceptor;
 
     /// Current socket
-    boost::asio::ip::tcp::socket mSocket;
+    Connection::Ptr mConnection;
 
     /// Stored callback
-    Callback mCallback;
+    Creator mCreator;
 
 };
 
