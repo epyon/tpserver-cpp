@@ -24,13 +24,97 @@
 TpConnection::TpConnection( 
     boost::asio::io_service& aIOS, 
     boost::asio::io_service::strand& aStrand 
-) : Connection( aIOS, aStrand )
+) : Connection( aIOS, aStrand ), status( PRECONNECTED )
 {
   // no op
 }
 
-void TpConnection::processFrame()
+void TpConnection::handleFrame()
+{
+  switch( status ) 
+  {
+    case PRECONNECTED : handlePreConnectFrame(); break;
+    case CONNECTED    : handlePreLoginFrame();   break;
+    case LOGGEDIN     : handleInGameFrame();     break;
+  }
+}
+
+void TpConnection::handlePreConnectFrame()
+{
+  switch( frame_in->getType() )
+  {
+    case ft02_Connect            : processConnectFrame();  break;
+    case ft03_Features_Get       : processFeaturesFrame(); break;
+    default : /*throw*/;                                   break;
+  }
+}
+
+void TpConnection::handlePreLoginFrame()
+{
+  switch( frame_in->getType() )
+  {
+    case ft02_Login              : processLoginFrame();        break;
+    case ft03_Features_Get       : processFeaturesFrame();     break;
+    case ft03_Ping               : processPingFrame();         break;
+    case ft02_Time_Remaining_Get : processTimeRemainingFrame();break;
+    case ft03_Account            : processAccountFrame();      break;
+    case ft04_GameInfo_Get       : processGameInfoFrame();     break;
+    case ft04_Filters_Set        : processFiltersFrame();      break;
+    default : /*throw*/;
+  }
+}
+
+void TpConnection::handleInGameFrame()
+{
+  switch( frame_in->getType() )
+  {
+    case ft03_Features_Get       : processFeaturesFrame();     break;
+    case ft03_Ping               : processPingFrame();         break;
+    case ft02_Time_Remaining_Get : processTimeRemainingFrame();break;
+    case ft04_GameInfo_Get       : processGameInfoFrame();     break;
+    case ft04_Filters_Set        : processFiltersFrame();      break;
+    default : handleAgentFrame(); break;
+  }
+}
+
+void TpConnection::processConnectFrame()
 {
 
 }
+
+void TpConnection::processLoginFrame()
+{
+
+}
+
+void TpConnection::processFeaturesFrame()
+{
+
+}
+
+void TpConnection::processPingFrame()
+{
+
+}
+
+void TpConnection::processTimeRemainingFrame()
+{
+
+}
+
+void TpConnection::processAccountFrame()
+{
+
+}
+
+void TpConnection::processGameInfoFrame()
+{
+
+}
+
+void TpConnection::processFiltersFrame()
+{
+
+}
+
 

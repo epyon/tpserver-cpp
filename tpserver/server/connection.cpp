@@ -79,7 +79,7 @@ void Connection::onReadBody( const boost::system::error_code& error )
 {
 	if ( !error )
 	{
-		processFrame();
+		handleFrame();
 		listen();
 	}
 	else

@@ -30,8 +30,3 @@ PlayerConnection::PlayerConnection(
   last_ping_time = time(NULL);
 }
 
-void PlayerConnection::processFrame()
-{
-
-}
-

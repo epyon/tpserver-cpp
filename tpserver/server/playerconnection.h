@@ -43,11 +43,6 @@ public:
         boost::asio::io_service::strand& aStrand 
         );
 
-    /** 
-     * The working method -- processes the received message
-     */
-    virtual void processFrame();
-
 private:
 
     /// Player agent responsible for the connection

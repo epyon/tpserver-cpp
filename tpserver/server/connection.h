@@ -90,7 +90,7 @@ public:
     /** 
      * The working method -- processes the received message
      */
-    virtual void processFrame() = 0;
+    virtual void handleFrame() = 0;
 
 protected: // fields
 

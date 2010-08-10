@@ -26,11 +26,24 @@
 
 class TpConnection : public Connection
 {
-public:
-	/// Boost shared pointer
-	typedef boost::shared_ptr< TpConnection > Ptr;
+  public:
+    /// Boost shared pointer
+    typedef boost::shared_ptr< TpConnection > Ptr;
 
-public:
+    /// Connection state
+    enum Type {
+      PLAYER,
+      ADMIN
+    };
+
+
+    // Connection status
+    enum Status {
+      PRECONNECTED = 0, //!< Connection not established
+      CONNECTED,        //!< Connection established but not ready
+      LOGGEDIN          //!< Connection ready
+    };
+  public:
 
     /**
      * Constructor.
@@ -46,7 +59,43 @@ public:
     /** 
      * The working method -- processes the received message
      */
-    virtual void processFrame();
+    virtual void handleFrame();
+
+    /**
+     * Process frames before connect frame.
+     *
+     * The server will answer a get features frame or a connect
+     * frame.
+     */
+    virtual void handlePreConnectFrame();
+
+    /**
+     * Process frames before login frame but after connect.
+     */
+    virtual void handlePreLoginFrame();
+
+    /**
+     * Process in game (after login) frames.
+     */
+    virtual void handleInGameFrame();
+
+
+    virtual void handleAgentFrame() = 0;
+
+  private:
+    void processConnectFrame();
+    void processLoginFrame();
+    void processFeaturesFrame();
+    void processPingFrame(); 
+    void processTimeRemainingFrame();
+    void processAccountFrame();
+    void processGameInfoFrame();
+    void processFiltersFrame();
+
+  protected:
+
+    /// Connection status
+    Status status;
 
 }; // class TpConnection
 
