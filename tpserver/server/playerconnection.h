@@ -21,10 +21,10 @@
  *
  */
 
-#include <tpserver/server/connection.h>
+#include <tpserver/server/tpconnection.h>
 
 class PlayerAgent;
-class PlayerConnection : public Connection
+class PlayerConnection : public TpConnection
 {
 public:
 	/// Boost shared pointer
@@ -48,6 +48,13 @@ public:
      */
     virtual void processFrame();
 
+private:
+
+    /// Player agent responsible for the connection
+    boost::shared_ptr<PlayerAgent> agent;
+
+    /// Last ping time
+    uint64_t last_ping_time;
 
 }; // class PlayerConnection
 

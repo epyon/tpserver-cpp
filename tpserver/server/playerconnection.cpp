@@ -1,7 +1,7 @@
 
 /*  Player Connection object
  *
- *  Copyright (C) 2003-2005,2007, 2008  Lee Begg and the Thousand Parsec Project
+ *  Copyright (C) 2010 Kornel Kisielewicz and the Thousand Parsec Project
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,9 +25,9 @@
 PlayerConnection::PlayerConnection( 
     boost::asio::io_service& aIOS, 
     boost::asio::io_service::strand& aStrand 
-) : Connection( aIOS, aStrand )
+) : TpConnection( aIOS, aStrand )
 {
-
+  last_ping_time = time(NULL);
 }
 
 void PlayerConnection::processFrame()

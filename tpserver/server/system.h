@@ -35,6 +35,7 @@
 
 #endif
 
+#include <time.h>
 #include <boost/cstdint.hpp>
 
 typedef boost::uint8_t uint8_t;
