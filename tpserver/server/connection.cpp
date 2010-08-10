@@ -79,7 +79,7 @@ void Connection::onReadBody( const boost::system::error_code& error )
 {
 	if ( !error )
 	{
-		// TODO: handle message mechanism
+		processFrame();
 		listen();
 	}
 	else
