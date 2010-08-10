@@ -65,15 +65,6 @@ class Server : private boost::noncopyable
     /// Creates a connection of the requested type
     Connection::Ptr createConnection( Connection::Type );
 
-    /// Accepts an admin connection
-    void acceptAdmin( const boost::asio::ip::tcp::socket& socket );
-
-    /// Accepts tp protocol connection
-    void acceptTp( const boost::asio::ip::tcp::socket& socket );
-
-    /// Accepts http protocol connection
-    void acceptHttp( const boost::asio::ip::tcp::socket& socket );
-
     /// Load PluginManager modules
     void loadModules();
 
