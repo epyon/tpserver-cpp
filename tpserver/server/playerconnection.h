@@ -48,9 +48,6 @@ private:
     /// Player agent responsible for the connection
     boost::shared_ptr<PlayerAgent> agent;
 
-    /// Last ping time
-    uint64_t last_ping_time;
-
 }; // class PlayerConnection
 
 #endif // PLAYERCONNECTION_H

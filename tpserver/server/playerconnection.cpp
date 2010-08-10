@@ -27,6 +27,5 @@ PlayerConnection::PlayerConnection(
     boost::asio::io_service::strand& aStrand 
 ) : TpConnection( aIOS, aStrand )
 {
-  last_ping_time = time(NULL);
 }
 

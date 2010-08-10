@@ -97,6 +97,9 @@ class TpConnection : public Connection
     /// Connection status
     Status status;
 
+    /// Last ping time
+    uint64_t last_ping_time;
+
 }; // class TpConnection
 
 #endif // TPCONNECTION_H

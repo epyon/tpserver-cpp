@@ -26,7 +26,7 @@ TpConnection::TpConnection(
     boost::asio::io_service::strand& aStrand 
 ) : Connection( aIOS, aStrand ), status( PRECONNECTED )
 {
-  // no op
+  last_ping_time = time(NULL);
 }
 
 void TpConnection::handleFrame()
