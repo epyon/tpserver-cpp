@@ -5,7 +5,7 @@ project "tpserver"
   files { "**.h", "**.cpp" }
   flags { "ExtraWarnings", "NoPCH" }
   includedirs { "../../", ".", "/opt/local/include/" }
-  targetname "http-proxy"
+  targetname "tpserver-cpp"
   links { "boost_system", "boost_thread-mt" }
   libdirs { "/opt/local/lib/" }
 
