@@ -180,3 +180,50 @@ void TpConnection::sendFail(InputFrame::Ptr oldframe, const FrameException& fe)
 {
     sendFail(oldframe, fe.getErrorCode(), fe.getErrorMessage(), fe.getRefList());
 }
+
+void TpConnection::sendSequence(InputFrame::Ptr oldframe, size_t sequence_size )
+{
+  OutputFrame::Ptr frame = createFrame(oldframe);
+  frame->setType( ft02_Sequence );
+  frame->packInt( sequence_size );
+  sendFrame(frame);
+}
+
+void TpConnection::sendOK(InputFrame::Ptr oldframe, const std::string& message )
+{
+  OutputFrame::Ptr frame = createFrame(oldframe);
+  frame->setType( ft02_OK );
+  frame->packString( message );
+  sendFrame(frame);
+}
+
+void TpConnection::sendModList(InputFrame::Ptr oldframe, FrameType ft, uint32_t sequence, const IdModList& modlist, uint32_t count, uint32_t start, uint64_t fromtime ) 
+{
+  if ( start > modlist.size() ) 
+  {
+    LOG_DEBUG("Starting number too high, snum = %d, size = %d", start, modlist.size());
+    sendFail(oldframe,fec_NonExistant, "Starting number too high");
+    return;
+  }
+  if  (count > modlist.size() - start ) 
+  {
+    count = modlist.size() - start;
+  }
+
+  if ( count > MAX_ID_LIST_SIZE + ((oldframe->getVersion() < fv0_4)? 1 : 0)) 
+  {
+    LOG_DEBUG("Number of items to get too high, numtoget = %d", count);
+    sendFail(oldframe,fec_FrameError, "Too many items to get, frame too big");
+    return;
+  }
+  OutputFrame::Ptr frame = createFrame(oldframe);
+  frame->setType(ft);
+  frame->packInt(sequence);
+  frame->packIdModList(modlist,count,start);
+  if (frame->getVersion() >= fv0_4) 
+  {
+    frame->packInt64(fromtime);
+  }
+  sendFrame(frame);
+}
+
