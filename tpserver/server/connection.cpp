@@ -39,7 +39,7 @@ Connection::Connection(
 void Connection::listen()
 {
 	// Create frame!
-  frame_in.reset( new Frame( version ) );
+  frame_in.reset( new OutputFrame( version ) );
 
 	// start an asynchronous read until headers end
 	boost::asio::async_read( socket,

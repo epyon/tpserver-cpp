@@ -28,7 +28,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
-#include <tpserver/server/frame.h>
+#include <tpserver/server/inputframe.h>
+#include <tpserver/server/outputframe.h>
 
 class Connection : 
   public boost::noncopyable,
@@ -101,10 +102,10 @@ protected: // fields
     boost::asio::io_service::strand& strand;
 
 	/// Frame being read
-	Frame::Ptr frame_in;
+	OutputFrame::Ptr frame_in;
 
 	/// Frames to be written
-	std::deque< Frame::Ptr > frames_out;
+	std::deque< InputFrame::Ptr > frames_out;
 
   /// Connection protocol version
 	ProtocolVersion version;
