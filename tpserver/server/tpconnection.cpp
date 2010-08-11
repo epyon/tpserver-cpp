@@ -21,6 +21,7 @@
 #include "tpconnection.h"
 
 #include "logging.h"
+#include "settings.h"
 
 TpConnection::TpConnection( 
     boost::asio::io_service& aIOS, 
@@ -90,7 +91,27 @@ void TpConnection::processLoginFrame()
 
 void TpConnection::processFeaturesFrame()
 {
+  LOG_DEBUG("TpConnection : Processing Get Features frame");
 
+  OutputFrame::Ptr features = createFrame( frame_in );
+  features->setType(ft03_Features);
+  IdSet fids;
+  fids.insert(fid_keep_alive);
+  fids.insert(fid_serverside_property);
+
+  if ( frame_in->getVersion() >= fv0_4 ) 
+  {
+    fids.insert(fid_filter_stringpad);
+  }
+  if ( Settings::getSettings()->get("add_players") == "yes" ) 
+  {
+    fids.insert(fid_account_register);
+  }
+
+  features->packIdSet( fids );
+  sendFrame( features );
+  
+  LOG_DEBUG("TpConnection : Processing Get Features frame -- finished");
 }
 
 void TpConnection::processPingFrame()
