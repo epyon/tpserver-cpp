@@ -102,7 +102,7 @@ void TpConnection::processPingFrame()
   if ( last_ping_time < static_cast<uint64_t>( time(NULL) ) - 60 )
   {
     last_ping_time = time(NULL);
-    //sendOK(frame, "Keep alive ok, hope you're still there");
+    sendOK( frame_in, "Keep alive ok, hope you're still there");
     LOG_DEBUG( "TpConnection : Ping completed" );
   }
   else
