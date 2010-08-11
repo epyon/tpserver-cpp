@@ -22,7 +22,7 @@
  */
 
 #include <stdint.h>
-#include <tpserver/protocol.h>
+#include <tpserver/server/protocol.h>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <set>

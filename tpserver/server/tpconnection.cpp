@@ -20,6 +20,7 @@
 
 #include "tpconnection.h"
 
+#include "logging.h"
 
 TpConnection::TpConnection( 
     boost::asio::io_service& aIOS, 
@@ -94,7 +95,22 @@ void TpConnection::processFeaturesFrame()
 
 void TpConnection::processPingFrame()
 {
+  LOG_DEBUG( "TpConnection : Processing Ping frame" );
 
+  // check for the time of the last frame, ignore this if
+  // less than 60 seconds ago.
+  if ( last_ping_time < static_cast<uint64_t>( time(NULL) ) - 60 )
+  {
+    last_ping_time = time(NULL);
+    sendOK(frame, "Keep alive ok, hope you're still there");
+    LOG_DEBUG( "TpConnection : Ping completed" );
+  }
+  else
+  {
+    LOG_WARNING( "TpConnection : Client tried to ping within 60 seconds of the last ping" );
+  }
+
+  LOG_DEBUG("TpConnection : Processing Ping frame -- finished");
 }
 
 void TpConnection::processTimeRemainingFrame()
