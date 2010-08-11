@@ -133,4 +133,28 @@ void TpConnection::processFiltersFrame()
 
 }
 
+OutputFrame::Ptr TpConnection::createFrame(InputFrame::Ptr oldframe)
+{
+  OutputFrame::Ptr newframe;
+  if ( oldframe != NULL ) 
+  {
+    newframe.reset( new OutputFrame( oldframe->getVersion(),pad_spaces ) );
+    newframe->setSequence( oldframe->getSequence() );
+  } 
+  else 
+  {
+    newframe.reset( new OutputFrame( version,pad_spaces ) );
+  }
+  return newframe;
+}
 
+void TpConnection::sendFrame( OutputFrame::Ptr frame )
+{
+  if ( version != frame->getVersion() ) 
+  {
+    LOG_WARNING("TpConnection : Version mis-match, packet %d, connection %d", frame->getVersion(), version );
+  }
+
+  frames_out.push_back( frame );
+  send();
+}

@@ -92,7 +92,19 @@ class TpConnection : public Connection
     void processGameInfoFrame();
     void processFiltersFrame();
 
+  public:
+//    void sendFail(InputFrame::Ptr oldframe, FrameErrorCode code, const std::string& error, const RefList& reflist = RefList());
+//    void sendFail(InputFrame::Ptr oldframe, const FrameException& fe);
+//    void sendSequence(InputFrame::Ptr oldframe, size_t sequence_size );
+//    void send(InputFrame::Ptr oldframe, const Packable* packable );
+//    void send(InputFrame::Ptr oldframe, const Packable::Ptr packable );
+//    void sendOK(InputFrame::Ptr oldframe, const std::string& message );
+//    void sendModList(InputFrame::Ptr oldframe, FrameType ft, uint32_t sequence, const IdModList& modlist,
+//        uint32_t count, uint32_t start, uint64_t fromtime );
+
   protected:
+    OutputFrame::Ptr createFrame( InputFrame::Ptr oldframe );
+    void sendFrame( OutputFrame::Ptr frame );
 
     /// Connection status
     Status status;
