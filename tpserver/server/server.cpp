@@ -36,21 +36,23 @@ Server::Server()
 
 void Server::startAdmin()
 {
-    Settings* settings = Settings::getSettings();
+  LOG_INFO("Server : starting admin connection...");
+  Settings* settings = Settings::getSettings();
 
-    if ( settings->get("admin_tcp") == "yes" ) 
-    {
-        mAdminPort.reset( new Acceptor(
-            mIOS, 
-            settings->get("admin_tcp"),
-            "22", 
-            boost::bind( &Server::createConnection, this, Connection::ADMIN )
-        ));
-    }
-    else
-    {
-        LOG_INFO("Not configured to start admin TCP socket");
-    }
+  if ( settings->get("admin_tcp") == "yes" ) 
+  {
+    mAdminPort.reset( new Acceptor(
+          mIOS, 
+          settings->get("admin_tcp"),
+          "22", 
+          boost::bind( &Server::createConnection, this, Connection::ADMIN )
+          ));
+    LOG_INFO("Server : admin port is ready");
+  }
+  else
+  {
+    LOG_INFO("Server : not configured to start admin TCP socket");
+  }
 }
 
 Connection::Ptr Server::createConnection( Connection::Type )
@@ -60,11 +62,14 @@ Connection::Ptr Server::createConnection( Connection::Type )
 
 void Server::stopAdmin()
 {
-    mAdminPort.reset();
+  LOG_INFO("Server : stopping admin socket...");
+  mAdminPort.reset();
+  LOG_INFO("Server : admin socket stoped");
 }
 
 void Server::loadModules()
 {
+  LOG_INFO("Server : loading modules...");
     // get singletons (TODO : remove singletons ;))
     Settings *settings     = Settings::getSettings();
 //    Game *game             = Game::getGame();
@@ -149,6 +154,8 @@ void Server::loadModules()
     {
 //        game->start();
     }
+  
+  LOG_INFO("Server : modules loaded");
 
 }
 
@@ -173,12 +180,14 @@ void Server::run()
         loadModules();
         startAdmin();
 
+        LOG_INFO("Server : opening TP protocol port...");
         mMainPort.reset( new Acceptor( 
             mIOS, 
             settings->get("tp_addr"), 
             settings->get("tp_port"), 
             boost::bind( &Server::createConnection, this, Connection::PLAYER ) 
         ) );
+        LOG_INFO("Server : TP protocol port opened");
 
         if ( settings->get("http") == "yes" )
         {
@@ -190,7 +199,9 @@ void Server::run()
             ) );
 */        }
 
+        LOG_INFO("Server : entering asynchronous operation mode...");
         mIOS.run();
+        LOG_INFO("Server : left asynchronous operation mode");
 
 //        if ( game->isLoaded() ) 
 //        {
