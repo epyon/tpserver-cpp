@@ -101,6 +101,8 @@ public:
 	/// Returns char to body
 	char* body();
 
+
+
 protected: // fields
 	/// Version of protocol that this frame is encoded with
 	ProtocolVersion version;
