@@ -31,7 +31,8 @@ Connection::Connection(
 )
  : socket( aIOS ),
    strand( aStrand ),
-   version( fv0_3 )
+   version( fv0_3 ),
+   pad_spaces( false )
 {
 	// no code
 }

@@ -110,6 +110,9 @@ protected: // fields
   /// Connection protocol version
 	ProtocolVersion version;
 
+  /// Space padding flag
+  bool pad_spaces;
+
 }; // class Connection
 
 #endif // CONNECTION_H
