@@ -30,6 +30,7 @@
 
 #include <tpserver/server/inputframe.h>
 #include <tpserver/server/outputframe.h>
+#include <tpserver/server/frameexception.h>
 
 class Connection : 
   public boost::noncopyable,

@@ -32,9 +32,9 @@ class OutputFrame : public Frame {
      */
     explicit OutputFrame(ProtocolVersion v = fv0_3, bool padding = false);
     
-    bool setType(FrameType nt);
-    void setSequence(int s);
-    void setPadding(bool new_padding);
+    bool setType( FrameType nt );
+    void setSequence( uint32_t s );
+    void setPadding( bool new_padding );
 
     void packString(const std::string &str);
     void packInt(int val);

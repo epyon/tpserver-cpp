@@ -35,9 +35,18 @@ OutputFrame::OutputFrame(ProtocolVersion v, bool padding)
   pad_strings = padding;
 }
 
-void OutputFrame::setSequence(int s) 
+void OutputFrame::setSequence(uint32_t s) 
 {
   sequence = s;
+}
+
+bool OutputFrame::setType(FrameType nt)
+{
+  if ( (nt < ft_Invalid || (version == fv0_3 && nt > ft03_Max) || (version == fv0_4 && nt > ft04_Max)) && (nt < ftad_LogMessage || nt > ftad_Max) )
+    return false;
+
+  type = nt;
+  return true;
 }
 
 void OutputFrame::setPadding(bool new_padding)

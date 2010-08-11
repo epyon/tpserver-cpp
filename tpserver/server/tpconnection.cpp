@@ -158,3 +158,25 @@ void TpConnection::sendFrame( OutputFrame::Ptr frame )
   frames_out.push_back( frame );
   send();
 }
+
+
+void TpConnection::sendFail(InputFrame::Ptr oldframe, FrameErrorCode code, const std::string& error, const RefList& reflist ) 
+{
+  OutputFrame::Ptr frame = createFrame( oldframe );
+  frame->setType( ft02_Fail );
+  frame->packInt( code );
+  frame->packString( error );
+  if ( frame->getVersion() >= fv0_4 ){
+    frame->packInt(reflist.size());
+    for (RefList::const_iterator ref = reflist.begin(); ref != reflist.end(); ++ref){
+      frame->packInt(ref->first);
+      frame->packInt(ref->second);
+    }
+  }
+  sendFrame(frame);
+}
+
+void TpConnection::sendFail(InputFrame::Ptr oldframe, const FrameException& fe)
+{
+    sendFail(oldframe, fe.getErrorCode(), fe.getErrorMessage(), fe.getRefList());
+}
