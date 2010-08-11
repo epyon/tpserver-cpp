@@ -40,7 +40,7 @@ Connection::Connection(
 void Connection::listen()
 {
 	// Create frame!
-  frame_in.reset( new OutputFrame( version ) );
+  frame_in.reset( new InputFrame( version ) );
 
 	// start an asynchronous read until headers end
 	boost::asio::async_read( socket,
@@ -51,6 +51,24 @@ void Connection::listen()
 			boost::asio::placeholders::error
 		)
 	);
+}
+
+void Connection::send()
+{
+	// TODO: change to write_some
+	// write requested data to socket asynchronously
+  if ( !frames_out.empty() )
+  {
+    boost::asio::async_write(
+      socket,
+      boost::asio::buffer( frames_out.front()->data(), frames_out.front()->getLength() ),
+      boost::bind( 
+        &Connection::onWrite, 
+        shared_from_this(),
+        boost::asio::placeholders::error
+      )
+    );
+  }
 }
 
 void Connection::onReadHeader( const boost::system::error_code& error )
@@ -89,26 +107,17 @@ void Connection::onReadBody( const boost::system::error_code& error )
 	}
 }
 
-
 void Connection::onWrite( const boost::system::error_code& error )
 {
 	// TODO: change to write_some
 	// write requested data to socket asynchronously
 	if ( !error )
 	{
+    // remove sent frame
 		frames_out.pop_front();
-		if ( !frames_out.empty() )
-		{
-			boost::asio::async_write(
-				socket,
-				boost::asio::buffer( frames_out.front()->data(), frames_out.front()->getLength() ),
-				boost::bind( 
-					&Connection::onWrite, 
-					shared_from_this(),
-					boost::asio::placeholders::error
-				)
-			);
-		}
+
+    // try sending more
+    send();
 	}
 	else
 	{

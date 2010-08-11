@@ -63,6 +63,13 @@ public:
 	 * Once enough data is read, onReadHeader is called.
 	 */
 	void listen();
+	
+  /**
+	 * Start sending data
+	 *
+	 * Once enough data is sent, control moves to onWrite
+	 */
+	void send();
 
     /**
      * Returns the socket associated with this connection.
@@ -93,7 +100,7 @@ public:
      */
     virtual void handleFrame() = 0;
 
-protected: // fields
+  protected: // fields
 
     /// Connection socket
     boost::asio::ip::tcp::socket socket;
@@ -102,10 +109,10 @@ protected: // fields
     boost::asio::io_service::strand& strand;
 
 	/// Frame being read
-	OutputFrame::Ptr frame_in;
+	InputFrame::Ptr frame_in;
 
 	/// Frames to be written
-	std::deque< InputFrame::Ptr > frames_out;
+	std::deque< OutputFrame::Ptr > frames_out;
 
   /// Connection protocol version
 	ProtocolVersion version;
