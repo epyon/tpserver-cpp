@@ -63,7 +63,7 @@ class Server : private boost::noncopyable
 
   private:
     /// Creates a connection of the requested type
-    Connection::Ptr createConnection( Connection::Type );
+    Connection::Ptr createConnection( Connection::Type type );
 
     /// Load PluginManager modules
     void loadModules();
@@ -82,6 +82,9 @@ class Server : private boost::noncopyable
 
     /// TP admin protocol listen port
     Acceptor::Ptr mAdminPort;
+
+    /// Strand of the whole server (temporary)
+    boost::asio::strand mStrand;
 
     /// The asio object (currently just one)
     boost::asio::io_service mIOS;

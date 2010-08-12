@@ -25,39 +25,52 @@
 
 #include "settings.h"
 #include "logging.h"
+#include "playerconnection.h"
+#include "adminconnection.h"
 //#include "game.h"
 //#include "pluginmanager.h"
 
 #include "system.h"
 
 Server::Server()
+  : mStrand( mIOS )
 {
 }
 
 void Server::startAdmin()
 {
-  LOG_INFO("Server : starting admin connection...");
   Settings* settings = Settings::getSettings();
-
-  if ( settings->get("admin_tcp") == "yes" ) 
-  {
-    mAdminPort.reset( new Acceptor(
-          mIOS, 
-          settings->get("admin_tcp"),
-          "22", 
-          boost::bind( &Server::createConnection, this, Connection::ADMIN )
-          ));
-    LOG_INFO("Server : admin port is ready");
-  }
-  else
+  
+  if ( settings->get("admin_tcp") != "yes" ) 
   {
     LOG_INFO("Server : not configured to start admin TCP socket");
+    return;
   }
+
+  std::string addr = settings->get("admin_tcp_addr");
+  std::string port = settings->get("admin_tcp_port");
+
+  if ( addr.empty() ) addr = "localhost";
+  if ( port.empty() ) port = "6925";
+
+  LOG_INFO("Server : starting admin connection on %s:%s...",addr.c_str(),port.c_str());
+  
+  mAdminPort.reset( new Acceptor( 
+        mIOS, addr, port,
+        boost::bind( &Server::createConnection, this, Connection::ADMIN )
+        ));
+
+  LOG_INFO("Server : admin port is ready");
 }
 
-Connection::Ptr Server::createConnection( Connection::Type )
+Connection::Ptr Server::createConnection( Connection::Type type )
 {
-  return Connection::Ptr( (Connection*)0 );
+  switch( type ) 
+  {
+    case Connection::PLAYER : return Connection::Ptr( new PlayerConnection( mIOS, mStrand ) );
+    case Connection::ADMIN  : return Connection::Ptr( new AdminConnection( mIOS, mStrand ) );
+  }
+  return Connection::Ptr( (Connection*)NULL );  
 }
 
 void Server::stopAdmin()
