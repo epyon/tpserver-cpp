@@ -83,11 +83,11 @@ class Server : private boost::noncopyable
     /// TP admin protocol listen port
     Acceptor::Ptr mAdminPort;
 
-    /// Strand of the whole server (temporary)
-    boost::asio::strand mStrand;
-
     /// The asio object (currently just one)
     boost::asio::io_service mIOS;
+    
+    /// Strand of the whole server (temporary)
+    boost::asio::strand mStrand;
 };
 
 #endif // SERVER_H
