@@ -29,3 +29,8 @@ PlayerConnection::PlayerConnection(
 {
 }
 
+void PlayerConnection::handleAgentFrame()
+{
+
+}
+

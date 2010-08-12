@@ -43,6 +43,7 @@ public:
         boost::asio::io_service::strand& aStrand 
         );
 
+    virtual void handleAgentFrame();
 private:
 
     /// Player agent responsible for the connection
