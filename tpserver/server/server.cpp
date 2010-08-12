@@ -193,13 +193,19 @@ void Server::run()
         loadModules();
         startAdmin();
 
-        LOG_INFO("Server : opening TP protocol port...");
+        std::string addr = settings->get("tp_addr");
+        std::string port = settings->get("tp_port");
+
+        if ( addr.empty() ) addr = "localhost";
+        if ( port.empty() ) port = "6923";
+
+        LOG_INFO("Server : starting TP connection on %s:%s...",addr.c_str(),port.c_str());
+
         mMainPort.reset( new Acceptor( 
-            mIOS, 
-            settings->get("tp_addr"), 
-            settings->get("tp_port"), 
+            mIOS, addr, port, 
             boost::bind( &Server::createConnection, this, Connection::PLAYER ) 
         ) );
+
         LOG_INFO("Server : TP protocol port opened");
 
         if ( settings->get("http") == "yes" )

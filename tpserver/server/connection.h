@@ -79,6 +79,7 @@ public:
      */
     boost::asio::ip::tcp::socket& getSocket();
 
+    virtual ~Connection();
   protected: // methods
 
     /**

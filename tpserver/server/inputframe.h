@@ -52,9 +52,28 @@ class InputFrame : public Frame {
     IdMap unpackMap();
     IdSet unpackIdSet();
 
+    /**
+     * Return the length of the data section
+     */
+   	virtual int getDataLength() const { return size; }
+
+    /// Return header buffer
+    char* getHeaderBuffer() { return header_buffer; }
+    /// Return body buffer (size must be set!)
+    char* getBodyBuffer();
+
+    bool decodeHeader();
+
+    virtual ~InputFrame();
   private:
     /// Current unpack position
     uint32_t unpackptr;
+    /// Header buffer
+    char header_buffer[ HEADER_LENGTH ];
+	  /// Size of the frame body in bytes
+	  uint32_t size;
+    /// Body buffer (size of size)
+    char* body_buffer;
 };
 
 #endif

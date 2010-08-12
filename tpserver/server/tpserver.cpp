@@ -75,7 +75,10 @@ int main(int argc, char* argv[])
             settings->set("log_level", savedloglevel);
         }
 
-#if !defined(WIN32)
+        LOG_DEBUG("DEBUG LOG ACTIVE");
+
+#ifdef DEAMONIZE
+#  if !defined(WIN32)
 
         // block unwanted signals
         sigset_t sig_block;
@@ -111,7 +114,7 @@ int main(int argc, char* argv[])
         server_instance.stop();
         this_thread.join();
 
-#else // defined(WIN32)
+#  else // defined(WIN32)
 
         // create the server in this thread
         Server server_instance;
@@ -128,8 +131,13 @@ int main(int argc, char* argv[])
         // run the server until stopped.
         server_instance.run();
 
+#  endif
+#else
+        // Server
+        Server server_instance;
+        // run the server until stopped.
+        server_instance.run();
 #endif
-
     }
     catch (std::exception& e)
     {

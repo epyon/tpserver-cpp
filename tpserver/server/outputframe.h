@@ -45,6 +45,23 @@ class OutputFrame : public Frame {
     void packIdMap(const IdMap& idmap);
     void packIdStringMap(const IdStringMap& idmap);
 
+    /**
+     * Construct a packet for sending
+     *
+     * Packet is created by constructing a header and
+     * appending the body to it.
+     */
+    std::string getPacket() const;
+
+    /**
+     * Returns data length
+     *
+     * Data length is the length of the constructed body.
+     */
+	  virtual int getDataLength() const { return body.size(); }
+  private:
+    /// Frame body
+    std::string body;    
 };
 
 #endif

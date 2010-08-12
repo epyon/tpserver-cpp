@@ -81,7 +81,9 @@ void TpConnection::handleInGameFrame()
 
 void TpConnection::processConnectFrame()
 {
-
+  LOG_INFO("TpConnection - connection received, hello is '%s'", frame_in->unpackString().c_str() );
+  sendOK( frame_in, "Protocol check ok, continue! Weclome to tpserver-cpp " VERSION);
+  LOG_DEBUG("TpConnection - hello sent");
 }
 
 void TpConnection::processLoginFrame()

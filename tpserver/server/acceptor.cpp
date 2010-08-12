@@ -20,6 +20,8 @@
 
 #include "acceptor.h"
 
+#include "logging.h"
+
 #include <boost/bind.hpp>
 
 Acceptor::Acceptor( boost::asio::io_service& aIOS, const std::string& aAddress, const std::string& aPort, Creator aCreator )
@@ -53,14 +55,23 @@ Acceptor::Acceptor( boost::asio::io_service& aIOS, const std::string& aAddress, 
 /// Accept handler
 void Acceptor::accept( const boost::system::error_code& aError )
 {
-    // if the accept had an error, forget it
-    if ( aError ) return;
+  LOG_DEBUG("Acceptor::accept()");
 
-    // process the socket
-    mConnection->listen();
+  // if the accept had an error, forget it
+  if ( aError ) {
+    LOG_ERROR("Acceptor : Error occured!");
+    return;
+  }
+
+  // process the socket
+  mConnection->listen();
+
+  LOG_DEBUG("Acceptor : listen returned.");
 
     // forget the connection, create a new one
     mConnection = mCreator();
+
+  LOG_DEBUG("Acceptor : creator returned.");
 
     // ... and asynchronously wait for an accept again
     mAcceptor.async_accept( 
@@ -68,4 +79,5 @@ void Acceptor::accept( const boost::system::error_code& aError )
         boost::bind( &Acceptor::accept, this, boost::asio::placeholders::error ) 
         );
 
+  LOG_DEBUG("Acceptor : async accept returned returned.");
 }

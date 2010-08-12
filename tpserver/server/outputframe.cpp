@@ -57,12 +57,12 @@ void OutputFrame::setPadding(bool new_padding)
 void OutputFrame::packString(const std::string &str)
 {
   packInt(str.length());
-  raw_data.append( str );
+  body.append( str );
     
   if ( pad_strings ) 
   {
-    size_t pad = raw_data.length() % 4;
-    if ( pad != 0 ) raw_data.append( 4-pad, '\0' );
+    size_t pad = body.length() % 4;
+    if ( pad != 0 ) body.append( 4-pad, '\0' );
   }
 }
 
@@ -70,21 +70,21 @@ void OutputFrame::packString(const std::string &str)
 void OutputFrame::packInt(int val)
 {
   int netval = htonl(val);
-  raw_data.append( (const char*) &netval, 4 );
+  body.append( (const char*) &netval, 4 );
 }
 
 void OutputFrame::packInt64(int64_t val)
 {
   int64_t netval = htonq(val);
-  raw_data.append( (const char*) &netval, 8 );
+  body.append( (const char*) &netval, 8 );
 }
 
 void OutputFrame::packInt8(char val)
 {
-  raw_data += val;
+  body += val;
   if ( pad_strings ) 
   {
-    raw_data.append( 3, '\0' );
+    body.append( 3, '\0' );
   }
 }
 
@@ -132,3 +132,32 @@ void OutputFrame::packIdStringMap(const IdStringMap& idmap)
   }
 }
 
+std::string OutputFrame::getPacket() const
+{
+  std::string packet;
+  packet.reserve( getLength() );
+  packet += "TP";
+  if( version <= 3 ){
+    // Put in the version number
+    for (int i = 100; i > 1; i = i / 10) {
+      int digit = (version - (version / i * i)) / (i/10);
+      packet += char( '0' + digit );
+    }
+  }else{
+    //versions 4 and above
+    packet += (char)(0xff & version);
+    packet += (char)(0xff & 0);
+  }
+  int nseq  = htonl(sequence);
+  int ntype = htonl(type);
+  int nlen  = htonl(body.length());
+
+  packet.append( (const char*)&nseq, 4 );
+  packet.append( (const char*)&ntype, 4 );
+  packet.append( (const char*)&nlen, 4 );
+
+  // Body
+  packet.append( body );
+
+  return packet;
+}

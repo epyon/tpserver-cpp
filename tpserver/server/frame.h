@@ -44,14 +44,14 @@ public:
     /**
      * Return the length of the data section
      */
-	int getDataLength() const { return size; }
+	virtual int getDataLength() const = 0;
 
     /**
      * Return the frame length
      *
      * Equals to length of data section + length of header section
      */
-	int getLength() const { return size + HEADER_LENGTH; }
+	int getLength() const { return getDataLength() + HEADER_LENGTH; }
 
 	/**
 	 * Return frame type
@@ -75,33 +75,13 @@ public:
 	 */
 	bool isPadStrings() const { return pad_strings; }
 
-  /**
-   * Decode header information from raw data
-   *
-   * @returns true if succeeded false, otherwise
-   */
-  bool decodeHeader();
-
-// Currently public, will be made protected probably
+protected:
 
 	/// Constructor
 	explicit Frame( ProtocolVersion v ) 
 		: version(v), type(ft_Invalid), 
-		  sequence(0), size(0), pad_strings(false) {}
-
-	/// Returns const char to all data
-	const char* data() const;
-
-	/// Returns const char to body
-	const char* body() const;
-
-	/// Returns char to all data
-	char* data();
-
-	/// Returns char to body
-	char* body();
-
-
+		  sequence(0), 
+      pad_strings(false) {}
 
 protected: // fields
 	/// Version of protocol that this frame is encoded with
@@ -110,10 +90,6 @@ protected: // fields
 	FrameType type;
 	/// Which packet sequence does this refer to?
 	uint32_t sequence;
-	/// Size of the frame in bytes
-	uint32_t size;
-	/// Actual data of the frame
-	std::string raw_data;
 	/// Whether to pad strings with \0 values
 	bool pad_strings;
 };
