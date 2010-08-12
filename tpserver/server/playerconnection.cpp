@@ -1,4 +1,3 @@
-
 /*  Player Connection object
  *
  *  Copyright (C) 2010 Kornel Kisielewicz and the Thousand Parsec Project

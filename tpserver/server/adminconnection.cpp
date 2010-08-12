@@ -1,5 +1,4 @@
-
-/*  Player Connection object
+/*  Admin Connection object
  *
  *  Copyright (C) 2010 Kornel Kisielewicz and the Thousand Parsec Project
  *
@@ -19,17 +18,17 @@
  *
  */
 
-#include "playerconnection.h"
+#include "adminconnection.h"
 
 
-PlayerConnection::PlayerConnection( 
+AdminConnection::AdminConnection( 
     boost::asio::io_service& aIOS, 
     boost::asio::io_service::strand& aStrand 
 ) : TpConnection( aIOS, aStrand )
 {
 }
 
-void PlayerConnection::handleAgentFrame()
+void AdminConnection::handleAgentFrame()
 {
 
 }
