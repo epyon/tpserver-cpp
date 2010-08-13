@@ -24,6 +24,7 @@
 #include <tpserver/server/acceptor.h> 
 #include <tpserver/server/playerconnection.h>
 #include <tpserver/server/outputframe.h>
+#include <tpserver/server/timercallback.h>
 #include <list>
 
 class Server : private boost::noncopyable
@@ -68,6 +69,11 @@ class Server : private boost::noncopyable
      * Sends frame to all player connections.
      */
     void sendToAllPlayers( OutputFrame::Ptr frame );
+
+    /**
+     * Adds a timer callback to ASIO
+     */
+    void addTimer( TimerCallback::Ptr timer );
 
   private:
     /// typedef for PlayerConnection reference list

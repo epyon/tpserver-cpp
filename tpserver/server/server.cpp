@@ -260,3 +260,9 @@ void Server::sendToAllPlayers( OutputFrame::Ptr frame )
     }
   }
 }
+
+void Server::addTimer( TimerCallback::Ptr timer )
+{
+  timer->fire( mIOS );
+}
+
