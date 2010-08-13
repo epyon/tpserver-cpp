@@ -67,8 +67,11 @@ Connection::Ptr Server::createConnection( Connection::Type type )
 {
   switch( type ) 
   {
-    case Connection::PLAYER : return Connection::Ptr( new PlayerConnection( mIOS, mStrand ) );
     case Connection::ADMIN  : return Connection::Ptr( new AdminConnection( mIOS, mStrand ) );
+    case Connection::PLAYER : 
+      PlayerConnection::Ptr result = PlayerConnection::Ptr( new PlayerConnection( mIOS, mStrand ) );
+      mPlayerConnections.push_back( result );
+      return result;
   }
   return Connection::Ptr( (Connection*)NULL );  
 }
@@ -243,3 +246,17 @@ Server::~Server()
 	
 }
 
+void Server::sendToAllPlayers( OutputFrame::Ptr frame )
+{
+  PlayerConnectionList::iterator it = mPlayerConnections.begin();
+  while ( it != mPlayerConnections.end() )
+  {
+    if ( it->expired() )
+      it = mPlayerConnections.erase(it);
+    else
+    {
+      it->lock()->sendFrame( frame );
+      ++it;
+    }
+  }
+}

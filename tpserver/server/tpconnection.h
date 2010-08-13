@@ -102,9 +102,9 @@ class TpConnection : public Connection
     void sendModList(InputFrame::Ptr oldframe, FrameType ft, uint32_t sequence, const IdModList& modlist,
         uint32_t count, uint32_t start, uint64_t fromtime );
 
+    void sendFrame( OutputFrame::Ptr frame );
   protected:
     OutputFrame::Ptr createFrame( InputFrame::Ptr oldframe );
-    void sendFrame( OutputFrame::Ptr frame );
 
     /// Connection status
     Status status;

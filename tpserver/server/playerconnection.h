@@ -30,6 +30,8 @@ public:
 	/// Boost shared pointer
 	typedef boost::shared_ptr< PlayerConnection > Ptr;
 
+	/// Boost weak pointer
+	typedef boost::weak_ptr< PlayerConnection > Ref;
 public:
 
     /**

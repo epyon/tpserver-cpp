@@ -22,6 +22,9 @@
  */
 
 #include <tpserver/server/acceptor.h> 
+#include <tpserver/server/playerconnection.h>
+#include <tpserver/server/outputframe.h>
+#include <list>
 
 class Server : private boost::noncopyable
 {
@@ -61,12 +64,24 @@ class Server : private boost::noncopyable
      */
     ~Server();
 
+    /**
+     * Sends frame to all player connections.
+     */
+    void sendToAllPlayers( OutputFrame::Ptr frame );
+
+  private:
+    /// typedef for PlayerConnection reference list
+    typedef std::list< PlayerConnection::Ref > PlayerConnectionList;
+
   private:
     /// Creates a connection of the requested type
     Connection::Ptr createConnection( Connection::Type type );
 
     /// Load PluginManager modules
     void loadModules();
+
+    /// List of connection references
+    PlayerConnectionList mPlayerConnections;
 
     /// Main TP protocol listen port
     Acceptor::Ptr mMainPort;
