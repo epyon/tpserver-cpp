@@ -51,9 +51,7 @@ class Connection : public boost::enable_shared_from_this< Connection > {
       PLAYER = 0,  //!< Player connection
       ADMIN,       //!< Admin connection
       LISTEN,      //!< Listen socket
-      LISTENADMIN, //!< Listen admin socket
-      METASERVER,  //!< Metaserver socket
-      AVAHI        //!< Avahi socket
+      LISTENADMIN  //!< Listen admin socket
     };
 
     /**

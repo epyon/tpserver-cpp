@@ -24,7 +24,6 @@
 #include <queue>
 #include <functional>
 #include <algorithm>
-#include <tpserver/advertiser.h>
 #include <tpserver/connection.h>
 #include <tpserver/timercallback.h>
 
@@ -57,9 +56,6 @@ class Network {
     void adminStop();
 
     void sendToAll(AsyncFrame* aframe);
-    void doneEOT();
-
-    Advertiser::Ptr getAdvertiser() const;
 
     // don't you even think about calling these functions
 
@@ -96,8 +92,6 @@ class Network {
     ConnMap writequeue;
 
     std::priority_queue<TimerCallback::Ptr, std::vector<TimerCallback::Ptr>, CompareTimerCallback > timers;
-
-    Advertiser::Ptr advertiser;
 
 };
 

@@ -54,7 +54,6 @@
 #include "timercallback.h"
 #include "prng.h"
 #include "turnprocess.h"
-#include "advertiser.h"
 #include "turntimer.h"
 
 #include "basicturntimer.h"
@@ -363,24 +362,6 @@ void Game::packGameInfoFrame(OutputFrame::Ptr frame){
   }else{
     frame->packString("");
     frame->packString("");
-  }
-
-  Advertiser::ServiceMap services = Network::getNetwork()->getAdvertiser()->getServices();
-  frame->packInt(services.size());
-  for(Advertiser::ServiceMap::iterator itcurr = services.begin();
-      itcurr != services.end(); ++itcurr){
-    frame->packString(itcurr->first);
-    if(settings->get("metaserver_fake_dns") != ""){
-      frame->packString(settings->get("metaserver_fake_dns"));
-    }else{
-      frame->packString(""); //TODO get dns automatically
-    }
-    if(settings->get("metaserver_fake_ip") != ""){
-      frame->packString(settings->get("metaserver_fake_ip"));
-    }else{
-      frame->packString(""); //TODO get ip address automatically
-    }
-    frame->packInt(itcurr->second);
   }
 
   std::map<uint32_t, std::pair<std::string, uint32_t> > optionalparams;

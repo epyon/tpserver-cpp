@@ -126,7 +126,6 @@ void TurnTimer::doEndOfTurn(){
     Game::getGame()->doEndOfTurn();
     finishedPlayers.clear();
     resetTimer();
-    Network::getNetwork()->doneEOT();
 }
 
 void TurnTimer::timerFinished(){

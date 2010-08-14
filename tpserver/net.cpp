@@ -42,16 +42,8 @@
 #include "tcpsocket.h"
 #include "admintcpsocket.h"
 #include "game.h"
-#include "httpsocket.h"
-#include "advertiser.h"
 #include "timercallback.h"
 #include "asyncframe.h"
-
-#ifdef HAVE_LIBGNUTLS
-#include "tlssocket.h"
-#include "httpssocket.h"
-#endif
-
 
 #include "net.h"
 
@@ -119,57 +111,13 @@ void Network::start()
     if(listensocket->getStatus() != Connection::DISCONNECTED){
       addConnection(listensocket);
       numsocks++;
-      advertiser->addService("tp", listensocket->getPort());
     }else{
       WARNING("Could not listen on TP (tcp) socket");
     }
-    if(Settings::getSettings()->get("http") == "yes"){
-      HttpSocket::Ptr httpsocket( new HttpSocket() );
-      httpsocket->openListen(Settings::getSettings()->get("http_addr"), Settings::getSettings()->get("http_port"));
-      if(httpsocket->getStatus() != Connection::DISCONNECTED){
-        addConnection(httpsocket);
-        numsocks++;
-        advertiser->addService("tp+http", httpsocket->getPort());
-      }else{
-        WARNING("Could not listen on HTTP (http tunneling) socket");
-      }
-    }else{
-      INFO("Not configured to start http socket");
-    }
-#ifdef HAVE_LIBGNUTLS
-    if(Settings::getSettings()->get("tps") == "yes"){
-      TlsSocket::Ptr secsocket( new TlsSocket() );
-      secsocket->openListen(Settings::getSettings()->get("tps_addr"), Settings::getSettings()->get("tps_port"));
-      if(secsocket->getStatus() != Connection::DISCONNECTED){
-        addConnection(secsocket);
-        numsocks++;
-        advertiser->addService("tps", secsocket->getPort());
-      }else{
-        WARNING("Could not listen on TPS (tls) socket");
-      }
-    }else{
-      INFO("Not configured to start tps socket");
-    }
-    if(Settings::getSettings()->get("https") == "yes"){
-      HttpsSocket::Ptr secsocket( new HttpsSocket() );
-      secsocket->openListen(Settings::getSettings()->get("https_addr"), Settings::getSettings()->get("https_port"));
-      if(secsocket->getStatus() != Connection::DISCONNECTED){
-        addConnection(secsocket);
-        numsocks++;
-        advertiser->addService("tp+https", secsocket->getPort());
-      }else{
-        WARNING("Could not listen on HTTPS (https tunneling) socket");
-      }
-    }else{
-      INFO("Not configured to start https socket");
-    }
-#endif
     if(numsocks != 0){
       INFO("Started network with %d listeners", numsocks);
       active = true;
     }
-
-    advertiser->publish();
 
   }else{
     WARNING("Not starting network, game not yet loaded");
@@ -184,9 +132,6 @@ void Network::stop()
     INFO("Stopping Network");
 
     //Remove the advertisers first (might be managing connections)
-    advertiser->unpublish();
-    
-    //for_each_key doesn't work here because the map gets modified by the function
     // replaced by while(!connections.empty()) loop
     while(!connections.empty()){
         removeConnection(connections.begin()->first);
@@ -238,14 +183,6 @@ void Network::sendToAll(AsyncFrame* aframe){
     }
   }
   delete aframe;
-}
-
-void Network::doneEOT(){
-  advertiser->updatePublishers();
-}
-
-Advertiser::Ptr Network::getAdvertiser() const{
-  return advertiser;
 }
 
 void Network::masterLoop()
@@ -338,8 +275,6 @@ Network::Network()
 
   halt = false;
   active = false;
-
-  advertiser = Advertiser::Ptr( new Advertiser() );
 
 }
 
