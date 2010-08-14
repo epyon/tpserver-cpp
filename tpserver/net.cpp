@@ -38,9 +38,7 @@
 #include "settings.h"
 #include "connection.h"
 #include "playerconnection.h"
-#include "adminconnection.h"
 #include "tcpsocket.h"
-#include "admintcpsocket.h"
 #include "game.h"
 #include "timercallback.h"
 #include "asyncframe.h"
@@ -145,30 +143,6 @@ void Network::stop()
 
 bool Network::isStarted() const{
   return active;
-}
-
-void Network::adminStart(){
-  if(Settings::getSettings()->get("admin_tcp") == "yes"){
-    AdminTcpSocket::Ptr admintcpsocket( new AdminTcpSocket() );
-    admintcpsocket->openListen(Settings::getSettings()->get("admin_tcp_addr"), Settings::getSettings()->get("admin_tcp_port"));
-    if(admintcpsocket->getStatus() != Connection::DISCONNECTED){
-      addConnection(admintcpsocket);
-    }else{
-      WARNING("Could not listen on admin TCP socket");
-    }
-  }else{
-    INFO("Not configured to start admin TCP socket");
-  }
-}
-
-void Network::adminStop(){
-  ConnMap::iterator itcurr = connections.begin();
-  while (itcurr != connections.end()) {
-    if ( itcurr->second->getType() == Connection::ADMIN || 
-         itcurr->second->getType() == Connection::LISTENADMIN )
-      removeConnection(itcurr->first);
-    ++itcurr;
-  }
 }
 
 void Network::sendToAll(AsyncFrame* aframe){

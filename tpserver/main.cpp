@@ -219,7 +219,6 @@ int main(int argc, char **argv)
               myNetwork->start();
             }
 
-	    myNetwork->adminStart();
 
             myNetwork->masterLoop();
 
@@ -231,7 +230,6 @@ int main(int argc, char **argv)
               myGame->saveAndClose();
             }
 
-	    myNetwork->adminStop();
             
             }catch(std::exception e){
                 myLogger->error("Caught exception: %s", e.what());

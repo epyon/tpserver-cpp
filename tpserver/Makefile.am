@@ -11,7 +11,6 @@ tpserver_cpp_SOURCES = main.cpp protocolobject.cpp connection.cpp tcpconnection.
 		persistence.cpp objectmanager.cpp playermanager.cpp listensocket.cpp boardmanager.cpp \
 		filelogger.cpp syslogger.cpp consolelogger.cpp resourcedescription.cpp \
 		resourcemanager.cpp pluginmanager.cpp \
-		admintcpsocket.cpp adminconnection.cpp adminlogger.cpp \
 		command.cpp commandmanager.cpp \
 		orderparameter.cpp orderparameters.cpp \
 		prng.cpp playeragent.cpp turnprocess.cpp \
@@ -34,7 +33,7 @@ headers_HEADERS = modifiable.h common.h algorithms.h connection.h tcpconnection.
 	order.h systemexception.h frameexception.h \
 	vector3d.h board.h message.h ordermanager.h \
 	objecttypemanager.h \
-	playerconnection.h adminconnection.h \
+	playerconnection.h \
 	refsys.h property.h propertyvalue.h component.h \
 	design.h designstore.h \
 	ruleset.h tpscheme.h category.h persistence.h \
@@ -59,7 +58,6 @@ headersbattlexml_HEADERS = battlexml/combatant.h battlexml/battleexceptions.h ba
 
 noinst_HEADERS = tcpsocket.h filelogger.h syslogger.h \
 	consolelogger.h logsink.h pluginmanager.h \
-	admintcpsocket.h adminlogger.h \
   asyncframe.h asynctimeremaining.h basicturntimer.h \
 	thresholdturntimer.h playersfinishedturntimer.h
 
